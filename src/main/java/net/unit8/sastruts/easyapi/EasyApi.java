@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface EasyApi {
-	String requestDto();
-	String responseDto();
+	String requestDto() default "";
+	String responseDto() default "";
 }

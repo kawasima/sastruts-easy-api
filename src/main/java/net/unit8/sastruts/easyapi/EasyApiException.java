@@ -35,21 +35,9 @@ public class EasyApiException extends Exception {
 	}
 
 	public Iterator<EasyApiException> iterator() {
-		final EasyApiException current = first();
-		return new Iterator<EasyApiException>() {
-			public boolean hasNext() {
-				return false;
-			}
-
-			public EasyApiException next() {
-				return null;
-			}
-
-			public void remove() {
-			}
-		};
+		return new EasyApiExceptionIterator(this);
 	}
-
+	
 	public String getMessageCode() {
 		return messageCode;
 	}
