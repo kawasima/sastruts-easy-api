@@ -2,10 +2,8 @@ package net.unit8.sastruts.easyapi;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 
-import javax.management.RuntimeErrorException;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletInputStream;
 
@@ -17,11 +15,11 @@ public class MockPostHttpServletRequest extends MockHttpServletRequestImpl {
 			String servletPath) {
 		super(servletContext, servletPath);
 	}
-	
+
 	public void setRequestBody(String body) {
 		this.body = body;
 	}
-	
+
 	@Override
 	public ServletInputStream getInputStream() {
 		String encoding = getCharacterEncoding();

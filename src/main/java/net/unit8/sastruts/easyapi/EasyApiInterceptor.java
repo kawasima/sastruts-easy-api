@@ -48,7 +48,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				transactionId = request.getHeader(transactionIdName);
 				InputStream in = request.getInputStream();
 				XStream xstream = XStreamFactory.getInstance();
-				xstream.alias("body", requestPropDesc.getPropertyType());
+				XStreamFactory.setBodyDto(requestPropDesc.getPropertyType());
 				RequestDto requestDto = (RequestDto)xstream.fromXML(in);
 				requestPropDesc.setValue(action, requestDto.body);
 			}
@@ -57,6 +57,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 			HttpServletResponse response = ResponseUtil.getResponse();
 			try {
 				ret = invocation.proceed();
+				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (EasyApiException cause) {
 				Iterator<EasyApiException> iter = cause.iterator();
 				responseDto.header.failures = new ArrayList<FailureDto>();
@@ -64,6 +65,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 					EasyApiException e = iter.next();
 					responseDto.header.failures.add(new FailureDto(e.getMessageCode(), e.getMessage()));
 				}
+				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (Throwable e) {
 				responseDto.header.errors = new ArrayList<ErrorDto>();
 				responseDto.header.errors.add(new ErrorDto("9999", e.getMessage()));
