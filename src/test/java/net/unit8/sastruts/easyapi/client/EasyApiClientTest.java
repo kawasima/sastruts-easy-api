@@ -1,6 +1,7 @@
 package net.unit8.sastruts.easyapi.client;
 
-import java.util.List;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.testapp.dto.MuchMoneyDto;
@@ -19,19 +20,23 @@ public class EasyApiClientTest {
 	public void testPost() {
 		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
 		MuchMoneyDto muchMoneyDto = new MuchMoneyDto();
-		client.post(muchMoneyDto).to("cityBank").execute();
+		try {
+			client.post(muchMoneyDto).to("cityBank").execute();
+		} catch (EasyApiException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Test
 	public void testGet() throws EasyApiException {
 		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
-		MuchMoneyDto muchMoneyDto = new MuchMoneyDto();
 		BeanMap query = new BeanMap();
 		query.put("id", "3");
 		query.put("name", "hogehoge");
-		List<UserDto> userList = client
+		UserDto user = client
 				.get(UserDto.class, query)
 				.from("cityBank")
-				.getResultList();
+				.getSingleResult();
+		assertThat(user.name, is("Yoshitaka Kawashima"));
 	}
 }

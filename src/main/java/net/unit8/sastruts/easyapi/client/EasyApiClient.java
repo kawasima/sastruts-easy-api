@@ -9,21 +9,27 @@ public class EasyApiClient {
 		client = new DefaultHttpClient();
 	}
 
-	@SuppressWarnings("rawtypes")
-	public GetClientContext get(Class<?> dtoClass) {
+	public GetClientContext<?> get(Class<?> dtoClass) {
 		return get(dtoClass, null);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public GetClientContext get(Class<?> dtoClass, Object query) {
-		GetClientContext ctx = new GetClientContext(client, dtoClass);
+	public <T>GetClientContext<T> get(Class<T> dtoClass, Object query) {
+		GetClientContext<T> ctx = new GetClientContext<T>(client, dtoClass);
 		if (query == null) {
 			ctx.setQuery(query);
 		}
 		return ctx;
 	}
 
-	public PostClientContext post(Object data) {
-		return new PostClientContext(client, data);
+	public <T>PostClientContext<T> post(Object data) {
+		return post(data, null);
+	}
+
+	public <T>PostClientContext<T> post(Object data, Object query) {
+		PostClientContext<T> ctx = new PostClientContext<T>(client, data);
+		if (query == null) {
+			ctx.setQuery(query);
+		}
+		return ctx;
 	}
 }

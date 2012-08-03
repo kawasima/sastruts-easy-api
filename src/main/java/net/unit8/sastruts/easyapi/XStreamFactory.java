@@ -2,6 +2,7 @@ package net.unit8.sastruts.easyapi;
 
 import net.unit8.sastruts.easyapi.converter.RequestConverter;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
+import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
 import com.thoughtworks.xstream.XStream;
 
@@ -18,7 +19,7 @@ public class XStreamFactory {
 			xstream = new XStream();
 			xstream.autodetectAnnotations(true);
 			xstream.alias("request", RequestDto.class);
-			xstream.alias("response", RequestDto.class);
+			xstream.alias("response", ResponseDto.class);
 			xstream.registerConverter(requestConverter);
 		}
 		return xstream;

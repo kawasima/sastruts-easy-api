@@ -1,43 +1,34 @@
 package net.unit8.sastruts.easyapi.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
 import net.unit8.sastruts.easyapi.XStreamFactory;
-import net.unit8.sastruts.easyapi.dto.ErrorDto;
-import net.unit8.sastruts.easyapi.dto.FailureDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.params.HttpParams;
 import org.apache.http.params.SyncBasicHttpParams;
-import org.seasar.framework.beans.BeanDesc;
-import org.seasar.framework.beans.PropertyDesc;
-import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.container.SingletonS2Container;
 import org.seasar.framework.exception.IORuntimeException;
-import org.seasar.framework.util.ClassUtil;
+import org.seasar.framework.util.ResourceUtil;
 
 public class GetClientContext<T> extends ClientContext<T> {
 	private EasyApiSettingProvider provider;
 
-	private final static Pattern DYNAMIC_SEGMENT_PTN = Pattern.compile("(\\{\\w+\\})");
 	private HttpClient client;
 	private String name;
 	private Class<T> dtoClass;
-	private HttpParams params;
 
 	public GetClientContext(HttpClient client, Class<T> dtoClass) {
 		this.dtoClass = dtoClass;
@@ -49,23 +40,6 @@ public class GetClientContext<T> extends ClientContext<T> {
 	public GetClientContext<T> from(String name) throws EasyApiException {
 		this.name = name;
 		return this;
-	}
-
-	public void setQuery(Object query) {
-		if (query == null) return;
-		if (query instanceof Map) {
-			for (Map.Entry<?,?> e : ((Map<?,?>)query).entrySet()) {
-				params.setParameter(e.getKey().toString(), e.getValue());
-			}
-		} else {
-			BeanDesc beanDesc = BeanDescFactory.getBeanDesc(query.getClass());
-			int size = beanDesc.getPropertyDescSize();
-			for (int i=0; i < size; i++) {
-				PropertyDesc propDesc = beanDesc.getPropertyDesc(i);
-				Object value = propDesc.getValue(query);
-				params.setParameter(propDesc.getPropertyName(), value);
-			}
-		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -84,24 +58,9 @@ public class GetClientContext<T> extends ClientContext<T> {
 		return executeQuery();
 	}
 
-	protected String processDynamicPath(String path) {
-		StringBuffer sb = new StringBuffer();
-		Matcher m = DYNAMIC_SEGMENT_PTN.matcher(path);
-		while(m.find()) {
-			String paramName = m.group(1);
-			Object val = params.getParameter(paramName);
-			String paramValue = (val == null) ? "" : val.toString();
-			m.appendReplacement(sb, "");
-			sb.append(paramValue);
-			params.removeParameter(paramName);
-		}
-		m.appendTail(sb);
-		return sb.toString();
-	}
-
 	@SuppressWarnings("unchecked")
 	protected T executeQuery() throws EasyApiException {
-		T dto = (T) ClassUtil.newInstance(dtoClass);
+		if (provider.useMock) return processMock();
 		EasyApiSetting setting = provider.get(name);
 		HttpGet method = new HttpGet(setting.getHost() + processDynamicPath(setting.getPath()));
 		method.setParams(params);
@@ -109,35 +68,34 @@ public class GetClientContext<T> extends ClientContext<T> {
 			HttpResponse response = client.execute(method);
 			HttpEntity entity = response.getEntity();
 			InputStream in = entity.getContent();
+			XStreamFactory.setBodyDto(dtoClass);
 			ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(in);
-			if (responseDto.header != null) {
-				if (responseDto.header.errors != null) {
-					for (ErrorDto error : responseDto.header.errors) {
-						throw new EasyApiSystemException(error.getMessage());
-					}
-				}
-				EasyApiException ex = null;
-				if (responseDto.header.failures != null) {
-					for (FailureDto failure : responseDto.header.failures) {
-						if (ex == null) {
-							ex = new EasyApiException(failure.getCode());
-						} else {
-							ex.append(new EasyApiException(failure.getCode()));
-						}
-					}
-				}
-				if (ex != null) throw ex;
-			}
+			processHeader(responseDto);
 
 			if (dtoClass.isInstance(responseDto.body)) {
 				return (T)responseDto.body;
+			} else {
+				throw new EasyApiSystemException("mismatch DTO type.");
 			}
-		} catch (ClientProtocolException e) {
-			e.printStackTrace();
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		}
-
-		return dto;
 	}
+
+	@SuppressWarnings("unchecked")
+	private T processMock() throws EasyApiException {
+		File dir = ResourceUtil.getResourceAsFile("mock/" + name);
+		if (!dir.exists()) {
+			return null;
+		}
+		Collection<File> dataFiles = FileUtils.listFiles(dir, new String[]{"xml"}, false);
+		if (dataFiles.isEmpty())
+			return null;
+
+		File dataFile = dataFiles.toArray(new File[0])[RandomUtils.nextInt(dataFiles.size())];
+		ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(dataFile);
+		processHeader(responseDto);
+		return (T)responseDto.body;
+	}
+
 }

@@ -6,10 +6,8 @@ import com.thoughtworks.xstream.annotations.XStreamAlias;
 
 @SuppressWarnings("serial")
 @XStreamAlias("request")
-public class RequestDto implements Serializable {
+public class RequestDto extends EasyApiMessageDto implements Serializable {
 	public RequestDto() {
 		header = new HeaderDto();
 	}
-	public HeaderDto header;
-	public Object body;	
 }

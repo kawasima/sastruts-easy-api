@@ -1,8 +1,13 @@
 package net.unit8.sastruts.easyapi.converter;
 
+import org.seasar.framework.util.StringUtil;
+
+import net.unit8.sastruts.easyapi.dto.EasyApiMessageDto;
 import net.unit8.sastruts.easyapi.dto.HeaderDto;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
+import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
+import com.thoughtworks.xstream.XStreamException;
 import com.thoughtworks.xstream.converters.Converter;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
@@ -14,29 +19,37 @@ public class RequestConverter implements Converter {
 
 	@SuppressWarnings("rawtypes")
 	public boolean canConvert(Class clazz) {
-		return RequestDto.class == clazz;
+		return clazz.isAssignableFrom(EasyApiMessageDto.class);
 	}
 
 	public void marshal(Object source, HierarchicalStreamWriter writer,
 			MarshallingContext context) {
-		RequestDto requestDto = (RequestDto) source;
+		EasyApiMessageDto dto = (EasyApiMessageDto) source;
 		writer.startNode("request");
-		context.convertAnother(requestDto.header);
+		context.convertAnother(dto.header);
 		writer.startNode("body");
-		context.convertAnother(requestDto.body);
+		context.convertAnother(dto.body);
 		writer.endNode();
 		writer.endNode();
 	}
 
 	public Object unmarshal(HierarchicalStreamReader reader,
 			UnmarshallingContext context) {
-		RequestDto requestDto = new RequestDto();
+		EasyApiMessageDto dto = null;
+		String nodeName = "request";
+		if (StringUtil.equals(nodeName, "resuest")) {
+			dto = new RequestDto();
+		} else if (StringUtil.equals(nodeName, "response")) {
+			dto = new ResponseDto();
+		} else {
+			throw new XStreamException("unknown node name");
+		}
 		reader.moveDown();
-		requestDto.header = (HeaderDto)context.convertAnother(requestDto, HeaderDto.class);
+		dto.header = (HeaderDto)context.convertAnother(dto, HeaderDto.class);
 		reader.moveUp();
 		reader.moveDown();
-		requestDto.body = context.convertAnother(requestDto, bodyDtoClass.get());
+		dto.body = context.convertAnother(dto, bodyDtoClass.get());
 		reader.moveUp();
-		return requestDto;
+		return dto;
 	}
 }

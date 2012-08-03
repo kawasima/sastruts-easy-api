@@ -11,7 +11,7 @@
 		<property name="path">"/api/{id}"</property>
 	</component>
 	<component class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
-		<property name="useMock">#ENV == 'ut' || #ENV == 'ct'</property>
+		<property name="useMock">true</property>
 		<initMethod name="register">
 			<arg>{"cityBank"}</arg>
 		</initMethod>
