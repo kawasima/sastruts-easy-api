@@ -47,7 +47,6 @@ public class PostClientContext<T> extends ClientContext<T> {
 			}
 		}
 
-
 		try {
 			HttpResponse response = client.execute(method);
 

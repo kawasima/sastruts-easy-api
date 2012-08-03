@@ -19,7 +19,7 @@ public class EasyApiClientTest {
 	public void testPost() {
 		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
 		MuchMoneyDto muchMoneyDto = new MuchMoneyDto();
-		client.post(muchMoneyDto).to("cityBank");
+		client.post(muchMoneyDto).to("cityBank").execute();
 	}
 
 	@Test
