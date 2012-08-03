@@ -19,13 +19,16 @@ public class RequestConverter implements Converter {
 
 	@SuppressWarnings("rawtypes")
 	public boolean canConvert(Class clazz) {
-		return clazz.isAssignableFrom(EasyApiMessageDto.class);
+		return EasyApiMessageDto.class.isAssignableFrom(clazz);
 	}
 
 	public void marshal(Object source, HierarchicalStreamWriter writer,
 			MarshallingContext context) {
 		EasyApiMessageDto dto = (EasyApiMessageDto) source;
-		writer.startNode("request");
+		if (dto instanceof RequestDto)
+			writer.startNode("request");
+		else
+			writer.startNode("response");
 		context.convertAnother(dto.header);
 		writer.startNode("body");
 		context.convertAnother(dto.body);
@@ -36,20 +39,23 @@ public class RequestConverter implements Converter {
 	public Object unmarshal(HierarchicalStreamReader reader,
 			UnmarshallingContext context) {
 		EasyApiMessageDto dto = null;
-		String nodeName = "request";
-		if (StringUtil.equals(nodeName, "resuest")) {
+		String nodeName = reader.getNodeName();
+		if (StringUtil.equals(nodeName, "request")) {
 			dto = new RequestDto();
 		} else if (StringUtil.equals(nodeName, "response")) {
 			dto = new ResponseDto();
 		} else {
 			throw new XStreamException("unknown node name");
 		}
-		reader.moveDown();
-		dto.header = (HeaderDto)context.convertAnother(dto, HeaderDto.class);
-		reader.moveUp();
-		reader.moveDown();
-		dto.body = context.convertAnother(dto, bodyDtoClass.get());
-		reader.moveUp();
+		while (reader.hasMoreChildren()) {
+			reader.moveDown();
+			if (StringUtil.equals(reader.getNodeName(), "header")) {
+				dto.header = (HeaderDto)context.convertAnother(dto, HeaderDto.class);
+			} else if (StringUtil.equals(reader.getNodeName(), "body")) {
+				dto.body = context.convertAnother(dto, bodyDtoClass.get());
+			}
+			reader.moveUp();
+		}
 		return dto;
 	}
 }

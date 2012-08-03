@@ -93,6 +93,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 			return null;
 
 		File dataFile = dataFiles.toArray(new File[0])[RandomUtils.nextInt(dataFiles.size())];
+		XStreamFactory.setBodyDto(dtoClass);
 		ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(dataFile);
 		processHeader(responseDto);
 		return (T)responseDto.body;
