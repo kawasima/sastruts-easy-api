@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE components PUBLIC "-//SEASAR//DTD S2Container 2.4//EN"
+	"http://www.seasar.org/dtd/components24.dtd">
+<components>
+	<component name="easyApiClient" class="net.unit8.sastruts.easyapi.client.MockEasyApiClient"/>
+	<component class="net.unit8.sastruts.easyapi.client.EsayApiSettingProvider">
+		<property name="useMock">#ENV == 'ut' || #ENV == 'ct'</property>
+		<initMethod name="register">
+			<arg>{"cityBank"}</arg>
+		</initMethod>
+	</component>
+	<component name="cityBank" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"http://example.com"</property>
+		<property name="path">"/api/{id}"</property>
+	<component>
+</components>
