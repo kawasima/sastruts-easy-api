@@ -7,7 +7,8 @@ public class EasyApiSetting {
 	private String path;
 	private int retryCount = 0;
 	private int retryInterval = 0;
-	
+	private String encoding = "UTF-8";
+
 	public String getName() {
 		return name;
 	}
@@ -37,5 +38,11 @@ public class EasyApiSetting {
 	}
 	public void setRetryInterval(int retryInterval) {
 		this.retryInterval = retryInterval;
+	}
+	public String getEncoding() {
+		return encoding;
+	}
+	public void setEncoding(String encoding) {
+		this.encoding = encoding;
 	}
 }

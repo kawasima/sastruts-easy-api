@@ -3,7 +3,7 @@
   "http://www.seasar.org/dtd/components24.dtd">
 <components namespace="s2junit4">
   <include path="aop.dicon"/>
-  <component name="easyApiInterceptor" class="net.unit8.sastruts.easyapi.EasyApiInterceptor"/>
+  <include path="easyapi.dicon"/>
 
   <component name="context" class="org.seasar.framework.unit.impl.InternalTestContextImpl"/>
 
