@@ -10,15 +10,23 @@ import net.unit8.sastruts.easyapi.dto.ErrorDto;
 import net.unit8.sastruts.easyapi.dto.FailureDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
+import org.apache.http.client.HttpClient;
 import org.apache.http.params.HttpParams;
 import org.seasar.framework.beans.BeanDesc;
 import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
+import org.seasar.framework.container.annotation.tiger.Binding;
+import org.seasar.framework.container.annotation.tiger.BindingType;
 
 public abstract class ClientContext<T> {
 	private static final Pattern DYNAMIC_SEGMENT_PTN = Pattern.compile("(\\{\\w+\\})");
-	private Object sendData;
 	protected HttpParams params;
+
+	@Binding(bindingType=BindingType.NONE)
+	protected HttpClient client;
+
+	@Binding(bindingType=BindingType.MAY)
+	public String transactionIdName;
 
 	public void setQuery(Object query) {
 		if (query == null) return;
@@ -71,6 +79,14 @@ public abstract class ClientContext<T> {
 			}
 			if (ex != null) throw ex;
 		}
+	}
+
+	public HttpClient getClient() {
+		return client;
+	}
+
+	public void setClient(HttpClient client) {
+		this.client = client;
 	}
 
 }

@@ -3,6 +3,10 @@
 	"http://www.seasar.org/dtd/components24.dtd">
 <components>
 	<component name="easyApiInterceptor" class="net.unit8.sastruts.easyapi.EasyApiInterceptor"/>
+	<component name="postClientContext"  class="net.unit8.sastruts.easyapi.client.PostClientContext">
+		<property name="transactionIdName">"X-TRANSACTION-ID"</property>
+	</component>
+	<component name="getClientContext"   class="net.unit8.sastruts.easyapi.client.GetClientContext"/>
 
 	<component name="easyApiClient" class="net.unit8.sastruts.easyapi.client.EasyApiClient"/>
 
@@ -10,7 +14,7 @@
 		<property name="host">"http://example.com"</property>
 		<property name="path">"/api/{id}"</property>
 	</component>
-	<component class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
+	<component name="easyApiSettingProvider" class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
 		<property name="useMock">true</property>
 		<initMethod name="register">
 			<arg>{"cityBank"}</arg>

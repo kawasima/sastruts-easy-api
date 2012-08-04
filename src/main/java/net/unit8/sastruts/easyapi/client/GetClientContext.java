@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Resource;
+
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
 import net.unit8.sastruts.easyapi.XStreamFactory;
@@ -16,24 +18,19 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.params.SyncBasicHttpParams;
-import org.seasar.framework.container.SingletonS2Container;
 import org.seasar.framework.exception.IORuntimeException;
 import org.seasar.framework.util.ResourceUtil;
 
 public class GetClientContext<T> extends ClientContext<T> {
+	@Resource(name="easyApiSettingProvider")
 	private EasyApiSettingProvider provider;
 
-	private HttpClient client;
 	private String name;
 	private Class<T> dtoClass;
 
-	public GetClientContext(HttpClient client, Class<T> dtoClass) {
-		this.dtoClass = dtoClass;
-		this.client = client;
-		provider = SingletonS2Container.getComponent(EasyApiSettingProvider.class);
+	public GetClientContext() {
 		params = new SyncBasicHttpParams();
 	}
 
@@ -80,6 +77,14 @@ public class GetClientContext<T> extends ClientContext<T> {
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		}
+	}
+
+	public Class<T> getDtoClass() {
+		return dtoClass;
+	}
+
+	public void setDtoClass(Class<T> dtoClass) {
+		this.dtoClass = dtoClass;
 	}
 
 	@SuppressWarnings("unchecked")
