@@ -1,5 +1,9 @@
 package net.unit8.sastruts.easyapi.client;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -10,17 +14,24 @@ import net.unit8.sastruts.easyapi.dto.ErrorDto;
 import net.unit8.sastruts.easyapi.dto.FailureDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.collections.Predicate;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.params.HttpParams;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.message.BasicNameValuePair;
 import org.seasar.framework.beans.BeanDesc;
 import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.container.annotation.tiger.Binding;
 import org.seasar.framework.container.annotation.tiger.BindingType;
+import org.seasar.framework.util.StringConversionUtil;
+import org.seasar.framework.util.StringUtil;
 
 public abstract class ClientContext<T> {
 	private static final Pattern DYNAMIC_SEGMENT_PTN = Pattern.compile("(\\{\\w+\\})");
-	protected HttpParams params;
+	protected List<NameValuePair> params = new ArrayList<NameValuePair>();
 
 	@Binding(bindingType=BindingType.NONE)
 	protected HttpClient client;
@@ -32,7 +43,7 @@ public abstract class ClientContext<T> {
 		if (query == null) return;
 		if (query instanceof Map) {
 			for (Map.Entry<?,?> e : ((Map<?,?>)query).entrySet()) {
-				params.setParameter(e.getKey().toString(), e.getValue());
+				params.add(new BasicNameValuePair(e.getKey().toString(), StringConversionUtil.toString(e.getValue())));
 			}
 		} else {
 			BeanDesc beanDesc = BeanDescFactory.getBeanDesc(query.getClass());
@@ -40,7 +51,7 @@ public abstract class ClientContext<T> {
 			for (int i=0; i < size; i++) {
 				PropertyDesc propDesc = beanDesc.getPropertyDesc(i);
 				Object value = propDesc.getValue(query);
-				params.setParameter(propDesc.getPropertyName(), value);
+				params.add(new BasicNameValuePair(propDesc.getPropertyName(), StringConversionUtil.toString(value)));
 			}
 		}
 	}
@@ -49,12 +60,16 @@ public abstract class ClientContext<T> {
 		StringBuffer sb = new StringBuffer();
 		Matcher m = DYNAMIC_SEGMENT_PTN.matcher(path);
 		while(m.find()) {
-			String paramName = m.group(1);
-			Object val = params.getParameter(paramName);
-			String paramValue = (val == null) ? "" : val.toString();
+			final String paramName = m.group(1);
+			NameValuePair pair = (NameValuePair)CollectionUtils.find(params, new Predicate() {
+				public boolean evaluate(Object obj) {
+					return StringUtil.equals(((NameValuePair)obj).getName(), paramName);
+				}
+			});
+			String paramValue = (pair == null) ? "" : pair.getValue();
 			m.appendReplacement(sb, "");
 			sb.append(paramValue);
-			params.removeParameter(paramName);
+			params.remove(pair);
 		}
 		m.appendTail(sb);
 		return sb.toString();
@@ -79,6 +94,20 @@ public abstract class ClientContext<T> {
 			}
 			if (ex != null) throw ex;
 		}
+	}
+	protected URI buildUri(EasyApiSetting setting) {
+		String query = URLEncodedUtils.format(params, setting.getEncoding());
+		try {
+			return new URIBuilder()
+				.setScheme(setting.getScheme())
+				.setHost(setting.getHost())
+				.setPath(processDynamicPath(setting.getPath()))
+				.setQuery(query)
+				.build();
+		} catch (URISyntaxException e) {
+			throw new EasyApiSystemException("Invalid URI", e);
+		}
+
 	}
 
 	public HttpClient getClient() {

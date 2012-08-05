@@ -29,4 +29,8 @@ public class EasyApiSettingProvider {
 	public EasyApiSetting get(String name) {
 		return settings.get(name);
 	}
+
+	public void setUseMock(boolean useMock) {
+		this.useMock = useMock;
+	}
 }

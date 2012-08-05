@@ -18,12 +18,21 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.params.SyncBasicHttpParams;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.seasar.framework.exception.IORuntimeException;
+import org.seasar.framework.log.Logger;
 import org.seasar.framework.util.ResourceUtil;
+import org.seasar.framework.util.StringUtil;
+
+import com.thoughtworks.xstream.XStream;
 
 public class GetClientContext<T> extends ClientContext<T> {
+	private static final Logger logger = Logger.getLogger(GetClientContext.class);
+
 	@Resource(name="easyApiSettingProvider")
 	private EasyApiSettingProvider provider;
 
@@ -31,7 +40,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 	private Class<T> dtoClass;
 
 	public GetClientContext() {
-		params = new SyncBasicHttpParams();
+		params = new ArrayList<NameValuePair>();
 	}
 
 	public GetClientContext<T> from(String name) throws EasyApiException {
@@ -59,20 +68,28 @@ public class GetClientContext<T> extends ClientContext<T> {
 	protected T executeQuery() throws EasyApiException {
 		if (provider.useMock) return processMock();
 		EasyApiSetting setting = provider.get(name);
-		HttpGet method = new HttpGet(setting.getHost() + processDynamicPath(setting.getPath()));
-		method.setParams(params);
+		HttpGet method = new HttpGet(buildUri(setting));
+		HttpParams httpParams = new BasicHttpParams();
+		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getConnectionTimeout());
+		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getSocketTimeout());
+		method.setParams(httpParams);
 		try {
 			HttpResponse response = client.execute(method);
 			HttpEntity entity = response.getEntity();
 			InputStream in = entity.getContent();
-			XStreamFactory.setBodyDto(dtoClass);
-			ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(in);
-			processHeader(responseDto);
-
-			if (dtoClass.isInstance(responseDto.body)) {
-				return (T)responseDto.body;
+			if (StringUtil.equals(setting.getResponseType(), "plain")) {
+				XStream xstream = XStreamFactory.getInstance();
+				xstream.alias(setting.getRootElement(), dtoClass);
+				return (T)xstream.fromXML(in);
 			} else {
-				throw new EasyApiSystemException("mismatch DTO type.");
+				XStreamFactory.setBodyDto(dtoClass);
+				ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(in);
+				processHeader(responseDto);
+				if (dtoClass.isInstance(responseDto.body)) {
+					return (T)responseDto.body;
+				} else {
+					throw new EasyApiSystemException("mismatch DTO type.");
+				}
 			}
 		} catch (IOException e) {
 			throw new IORuntimeException(e);

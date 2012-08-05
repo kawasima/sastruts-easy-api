@@ -19,7 +19,7 @@ public class EasyApiClient {
 
 		ctx.setClient(client);
 		ctx.setDtoClass(dtoClass);
-		if (query == null) {
+		if (query != null) {
 			ctx.setQuery(query);
 		}
 		return ctx;

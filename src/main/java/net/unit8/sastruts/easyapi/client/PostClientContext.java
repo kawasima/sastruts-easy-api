@@ -3,6 +3,7 @@ package net.unit8.sastruts.easyapi.client;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import javax.annotation.Resource;
@@ -13,11 +14,9 @@ import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
-import org.apache.http.params.SyncBasicHttpParams;
-import org.seasar.framework.container.annotation.tiger.Binding;
-import org.seasar.framework.container.annotation.tiger.BindingType;
 import org.seasar.framework.exception.IORuntimeException;
 import org.seasar.framework.log.Logger;
 
@@ -31,7 +30,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 	private Object data;
 
 	public PostClientContext() {
-		params = new SyncBasicHttpParams();
+		params = new ArrayList<NameValuePair>();
 	}
 
 	public PostClientContext<T> to(String name) {
@@ -42,7 +41,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 	public int execute() throws EasyApiException {
 		if (provider.useMock) return processMock();
 		EasyApiSetting setting = provider.get(name);
-		HttpPost method = new HttpPost(setting.getHost() + processDynamicPath(setting.getPath()));
+		HttpPost method = new HttpPost(buildUri(setting));
 		if (data != null) {
 			String xml = XStreamFactory.getInstance().toXML(data);
 			try {
