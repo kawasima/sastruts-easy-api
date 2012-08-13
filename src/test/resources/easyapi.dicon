@@ -15,6 +15,11 @@
 		<property name="path">"/api/{id}"</property>
 	</component>
 
+	<component name="familyRegister" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"example.com"</property>
+		<property name="path">"/api/{id}"</property>
+	</component>
+
 	<component name="hotpepper" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
 		<property name="host">"webservice.recruit.co.jp"</property>
 		<property name="path">"/hotpepper/gourmet/v1/"</property>
@@ -25,7 +30,7 @@
 	<component name="easyApiSettingProvider" class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
 		<property name="useMock">true</property>
 		<initMethod name="register">
-			<arg>{"citiBank", "hotpepper"}</arg>
+			<arg>{"familyRegister", "citiBank", "hotpepper"}</arg>
 		</initMethod>
 	</component>
 </components>

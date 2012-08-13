@@ -1,6 +1,7 @@
 <response>
 	<header/>
 	<body>
-		<name>Yoshitaka Kawashima</name>
+		<amount>1000</amount>
+		<tokenGift>towel</tokenGift>
 	</body>
 </response>

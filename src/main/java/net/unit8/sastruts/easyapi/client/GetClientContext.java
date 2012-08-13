@@ -36,7 +36,6 @@ public class GetClientContext<T> extends ClientContext<T> {
 	@Resource(name="easyApiSettingProvider")
 	private EasyApiSettingProvider provider;
 
-	private String name;
 	private Class<T> dtoClass;
 
 	public GetClientContext() {

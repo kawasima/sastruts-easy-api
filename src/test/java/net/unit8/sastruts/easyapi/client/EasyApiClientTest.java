@@ -2,7 +2,6 @@ package net.unit8.sastruts.easyapi.client;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
-
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.testapp.dto.MuchMoneyDto;
 import net.unit8.sastruts.easyapi.testapp.dto.UserDto;
@@ -21,7 +20,10 @@ public class EasyApiClientTest {
 		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
 		MuchMoneyDto muchMoneyDto = new MuchMoneyDto();
 		try {
+			muchMoneyDto.amount = 10000;
 			client.post(muchMoneyDto).to("citiBank").execute();
+			assertThat(muchMoneyDto.tokenGift, is("towel"));
+			assertThat(muchMoneyDto.amount, is(10000));
 		} catch (EasyApiException e) {
 			e.printStackTrace();
 		}
@@ -35,8 +37,9 @@ public class EasyApiClientTest {
 		query.put("name", "hogehoge");
 		UserDto user = client
 				.get(UserDto.class, query)
-				.from("citiBank")
+				.from("familyRegister")
 				.getSingleResult();
 		assertThat(user.name, is("Yoshitaka Kawashima"));
 	}
+
 }

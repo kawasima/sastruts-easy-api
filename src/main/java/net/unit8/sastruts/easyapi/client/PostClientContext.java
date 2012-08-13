@@ -12,6 +12,7 @@ import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -26,7 +27,6 @@ public class PostClientContext<T> extends ClientContext<T> {
 	@Resource(name="easyApiSettingProvider")
 	private EasyApiSettingProvider provider;
 
-	private String name;
 	private Object data;
 
 	public PostClientContext() {
@@ -39,10 +39,10 @@ public class PostClientContext<T> extends ClientContext<T> {
 	}
 
 	public int execute() throws EasyApiException {
-		if (provider.useMock) return processMock();
 		EasyApiSetting setting = provider.get(name);
 		HttpPost method = new HttpPost(buildUri(setting));
 		if (data != null) {
+			XStreamFactory.setOmitFields(data);
 			String xml = XStreamFactory.getInstance().toXML(data);
 			try {
 				HttpEntity entity = new StringEntity(xml, setting.getEncoding());
@@ -55,21 +55,36 @@ public class PostClientContext<T> extends ClientContext<T> {
 		String transactionId = UUID.randomUUID().toString();
 		if (transactionIdName != null)
 			method.addHeader(transactionIdName, transactionId);
+		InputStream in = null;
 		try {
 			logger.log("ISEA0001", new Object[]{transactionId, name});
-			HttpResponse response = client.execute(method);
-			HttpEntity entity = response.getEntity();
-			InputStream in = entity.getContent();
+			if (provider.useMock) {
+				in = getMockResponseStream();
+			} else {
+				HttpResponse response = client.execute(method);
+				HttpEntity entity = response.getEntity();
+				in = entity.getContent();
+			}
+			Class<?> resultSetDtoClass = XStreamFactory.getResutSetClass(data);
+			if (resultSetDtoClass != null) {
+				XStreamFactory.setBodyDto(resultSetDtoClass);
+			} else {
+				XStreamFactory.setBodyDto(data.getClass());
+			}
 			ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(in);
 			processHeader(responseDto);
-
+			if (data != null && responseDto.body != null) {
+				XStreamFactory.setResponse(data, responseDto.body);
+			}
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		} finally {
 			logger.log("ISEA0002", new Object[]{transactionId, name});
+			IOUtils.closeQuietly(in);
 		}
 		return 1;
 	}
+
 	public Object getDto() {
 		return this.data;
 	}
@@ -78,10 +93,4 @@ public class PostClientContext<T> extends ClientContext<T> {
 		this.data = data;
 	}
 
-	private int processMock() {
-		String transactionId = UUID.randomUUID().toString();
-		logger.log("ISEA0001", new Object[]{transactionId, name});
-		logger.log("ISEA0002", new Object[]{transactionId, name});
-		return 1;
-	}
 }
