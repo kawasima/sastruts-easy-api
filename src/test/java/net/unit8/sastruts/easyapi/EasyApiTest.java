@@ -30,6 +30,16 @@ public class EasyApiTest {
 		MockHttpServletResponse response = (MockHttpServletResponse)ResponseUtil.getResponse();
 		System.out.println(response.getResponseString());
 	}
+
+	@Test
+	public void testJapanese() {
+		Test01Action action = ctx.getComponent(Test01Action.class);
+		action.showJapanese();
+		MockHttpServletResponse response = (MockHttpServletResponse)ResponseUtil.getResponse();
+		System.out.println(response.getCharacterEncoding());
+		System.out.println(response.getResponseString());
+	}
+
 	@Test
 	public void testFailure() throws Exception {
 		Test01Action action = ctx.getComponent(Test01Action.class);

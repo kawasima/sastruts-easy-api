@@ -9,6 +9,7 @@ import org.seasar.struts.annotation.Execute;
 
 public class Test01Action {
 	public UserDto userDto;
+
 	@Execute(validator=false)
 	@EasyApi(responseDto="userDto")
 	public String show() {
@@ -16,7 +17,15 @@ public class Test01Action {
 		userDto.name = "Yoshitaka Kawashima";
 		return null;
 	}
-	
+
+	@Execute(validator=false)
+	@EasyApi(responseDto="userDto")
+	public String showJapanese() {
+		userDto = new UserDto();
+		userDto.name = "川島";
+		return null;
+	}
+
 	@Execute(validator=false)
 	@EasyApi(responseDto="userDto")
 	public String showFailure() throws UserDuplicateException {
@@ -27,7 +36,7 @@ public class Test01Action {
 		}
 		return null;
 	}
-	
+
 	@SuppressWarnings("serial")
 	public static class UserDuplicateException extends EasyApiException {
 		public UserDuplicateException(String messageCode) {

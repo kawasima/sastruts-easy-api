@@ -30,6 +30,12 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 	@Binding(bindingType=BindingType.MAY)
 	public String transactionIdName = "X-Transaction-Id";
 
+	@Binding(bindingType=BindingType.MAY)
+	public String encoding = "UTF-8";
+
+	@Binding(bindingType=BindingType.MAY)
+	public String contentType = "text/xml";
+
 	public Object invoke(MethodInvocation invocation) throws Throwable {
 		EasyApi easyApiAnno = invocation.getMethod().getAnnotation(EasyApi.class);
 		Object action = invocation.getThis();
@@ -55,6 +61,9 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 
 			ResponseDto responseDto = new ResponseDto();
 			HttpServletResponse response = ResponseUtil.getResponse();
+			response.setCharacterEncoding(encoding);
+			response.setContentType(contentType);
+
 			try {
 				ret = invocation.proceed();
 				response.setStatus(HttpServletResponse.SC_OK);
