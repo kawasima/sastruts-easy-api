@@ -25,7 +25,9 @@ public class RequestConverter implements Converter {
 	public void marshal(Object source, HierarchicalStreamWriter writer,
 			MarshallingContext context) {
 		EasyApiMessageDto dto = (EasyApiMessageDto) source;
+		writer.startNode("head");
 		context.convertAnother(dto.header);
+		writer.endNode();
 		writer.startNode("body");
 		context.convertAnother(dto.body);
 		writer.endNode();
