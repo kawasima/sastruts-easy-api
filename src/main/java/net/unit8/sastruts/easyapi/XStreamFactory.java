@@ -16,6 +16,8 @@ import org.seasar.framework.util.ModifierUtil;
 import org.seasar.framework.util.tiger.CollectionsUtil;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
+import com.thoughtworks.xstream.io.xml.Xpp3DomDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
@@ -30,7 +32,7 @@ public class XStreamFactory {
 
 	public static synchronized XStream getInstance() {
 		if (xstream == null) {
-			xstream = new XStream() {
+			xstream = new XStream(new Xpp3DomDriver(new XmlFriendlyNameCoder("_-", "_"))) {
 				protected MapperWrapper wrapMapper(MapperWrapper next) {
 					return new MapperWrapper(next) {
 						@SuppressWarnings("rawtypes")
