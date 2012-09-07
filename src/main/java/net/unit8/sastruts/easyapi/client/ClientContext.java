@@ -128,8 +128,8 @@ public abstract class ClientContext<T> {
 	}
 
 	protected InputStream getMockResponseStream() {
-		File dir = ResourceUtil.getResourceAsFile("mock/" + name);
-		if (!dir.exists()) {
+		File dir = ResourceUtil.getResourceAsFileNoException("mock/" + name);
+		if (dir == null || !dir.exists()) {
 			return null;
 		}
 		Collection<File> dataFiles = FileUtils.listFiles(dir, new String[]{"xml"}, false);

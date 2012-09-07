@@ -27,10 +27,15 @@
 		<property name="rootElement">"results"</property>
 	</component>
 
+	<component name="paramPost" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"example.com"</property>
+		<property name="path">"/api/{id}"</property>
+		<property name="requestType">"URL_ENCODE"</property>
+	</component>
 	<component name="easyApiSettingProvider" class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
 		<property name="useMock">true</property>
 		<initMethod name="register">
-			<arg>{"familyRegister", "citiBank", "hotpepper"}</arg>
+			<arg>{"familyRegister", "citiBank", "hotpepper", "paramPost"}</arg>
 		</initMethod>
 	</component>
 </components>

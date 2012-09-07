@@ -24,15 +24,12 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.seasar.framework.exception.IORuntimeException;
-import org.seasar.framework.log.Logger;
 import org.seasar.framework.util.ResourceUtil;
 import org.seasar.framework.util.StringUtil;
 
 import com.thoughtworks.xstream.XStream;
 
 public class GetClientContext<T> extends ClientContext<T> {
-	private static final Logger logger = Logger.getLogger(GetClientContext.class);
-
 	@Resource(name="easyApiSettingProvider")
 	private EasyApiSettingProvider provider;
 

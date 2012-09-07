@@ -60,7 +60,7 @@ public class XStreamFactory {
 		requestConverter.bodyDtoClass.set(bodyDto);
 	}
 
-	private static DtoConfig configureDto(Object dto) {
+	public static DtoConfig configureDto(Object dto) {
 		final Field[] fields = ClassUtil.getDeclaredFields(dto.getClass());
 		DtoConfig config = new DtoConfig();
 		for (int i = 0; i < fields.length; ++i) {

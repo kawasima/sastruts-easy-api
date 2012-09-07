@@ -42,4 +42,16 @@ public class EasyApiClientTest {
 		assertThat(user.name, is("Yoshitaka Kawashima"));
 	}
 
+	@Test
+	public void testPostParam() {
+		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
+		MuchMoneyDto muchMoneyDto = new MuchMoneyDto();
+
+		try {
+			muchMoneyDto.amount = 10000;
+			client.post(muchMoneyDto).to("paramPost").execute();
+		} catch (EasyApiException e) {
+			e.printStackTrace();
+		}
+	}
 }

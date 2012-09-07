@@ -1,5 +1,7 @@
 package net.unit8.sastruts.easyapi.client;
 
+import net.unit8.sastruts.easyapi.RequestType;
+
 public class EasyApiSetting {
 	/** Setting name */
 	private String scheme = "http";
@@ -12,6 +14,8 @@ public class EasyApiSetting {
 	private int socketTimeout = 10 * 1000;
 	private String encoding = "UTF-8";
 	private String responseType = "message";
+	private RequestType requestType = RequestType.XML;
+
 	private String rootElement;
 
 	public String getScheme() {
@@ -56,6 +60,13 @@ public class EasyApiSetting {
 	}
 	public void setEncoding(String encoding) {
 		this.encoding = encoding;
+	}
+
+	public RequestType getRequestType() {
+		return requestType;
+	}
+	public void setRequestType(RequestType requestType) {
+		this.requestType = requestType;
 	}
 	public String getResponseType() {
 		return responseType;

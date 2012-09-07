@@ -4,22 +4,33 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import javax.annotation.Resource;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.XStreamFactory;
+import net.unit8.sastruts.easyapi.dto.RequestDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
+import org.apache.http.message.BasicNameValuePair;
+import org.seasar.framework.beans.BeanDesc;
+import org.seasar.framework.beans.PropertyDesc;
+import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.exception.IORuntimeException;
 import org.seasar.framework.log.Logger;
+import org.seasar.framework.util.StringConversionUtil;
+import org.seasar.framework.util.tiger.CollectionsUtil;
+
+import com.thoughtworks.xstream.annotations.XStreamOmitField;
 
 public class PostClientContext<T> extends ClientContext<T> {
 	private static final Logger logger = Logger.getLogger(ClientContext.class);
@@ -43,13 +54,39 @@ public class PostClientContext<T> extends ClientContext<T> {
 		HttpPost method = new HttpPost(buildUri(setting));
 		if (data != null) {
 			XStreamFactory.setOmitFields(data);
-			String xml = XStreamFactory.getInstance().toXML(data);
-			try {
-				HttpEntity entity = new StringEntity(xml, setting.getEncoding());
-				method.setEntity(entity);
-			} catch (UnsupportedEncodingException e) {
-				throw new IORuntimeException(e);
+			HttpEntity entity = null;
+			switch (setting.getRequestType()) {
+			case URL_ENCODE:
+				List<NameValuePair> parameters = CollectionsUtil.newArrayList();
+				BeanDesc beanDesc = BeanDescFactory.getBeanDesc(data.getClass());
+				for (int i=0; i < beanDesc.getPropertyDescSize(); i++) {
+					PropertyDesc propertyDesc = beanDesc.getPropertyDesc(i);
+					if (propertyDesc.getField().getAnnotation(XStreamOmitField.class) == null) {
+						Object value = propertyDesc.getValue(data);
+						if (value != null) {
+							parameters.add(new BasicNameValuePair(
+									propertyDesc.getPropertyName(), StringConversionUtil.toString(value)));
+						}
+					}
+				}
+				try {
+					entity = new UrlEncodedFormEntity(parameters, setting.getEncoding());
+				} catch (UnsupportedEncodingException e) {
+					throw new IORuntimeException(e);
+				}
+				break;
+			default:
+				RequestDto requestDto = new RequestDto();
+				requestDto.body = data;
+				String xml = XStreamFactory.getInstance().toXML(requestDto);
+				try {
+					entity = new StringEntity(xml, setting.getEncoding());
+				} catch (UnsupportedEncodingException e) {
+					throw new IORuntimeException(e);
+				}
+				break;
 			}
+			method.setEntity(entity);
 		}
 
 		String transactionId = UUID.randomUUID().toString();
