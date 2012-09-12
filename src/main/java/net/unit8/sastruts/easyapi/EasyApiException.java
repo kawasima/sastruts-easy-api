@@ -4,8 +4,8 @@ import java.util.Iterator;
 
 @SuppressWarnings("serial")
 public class EasyApiException extends Exception {
-	private String messageCode;
-	private String message;
+	protected String messageCode;
+	protected String message;
 
 	protected EasyApiException next;
 	protected EasyApiException prev;
@@ -37,7 +37,7 @@ public class EasyApiException extends Exception {
 	public Iterator<EasyApiException> iterator() {
 		return new EasyApiExceptionIterator(this);
 	}
-	
+
 	public String getMessageCode() {
 		return messageCode;
 	}
