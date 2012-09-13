@@ -46,7 +46,7 @@ public class RequestConverter implements Converter {
 		}
 		while (reader.hasMoreChildren()) {
 			reader.moveDown();
-			if (StringUtil.equals(reader.getNodeName(), "header")) {
+			if (StringUtil.equals(reader.getNodeName(), "head")) {
 				dto.header = (HeaderDto)context.convertAnother(dto, HeaderDto.class);
 			} else if (StringUtil.equals(reader.getNodeName(), "body")) {
 				dto.body = context.convertAnother(dto, bodyDtoClass.get());
