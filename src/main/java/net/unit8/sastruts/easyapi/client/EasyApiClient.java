@@ -10,7 +10,7 @@ public class EasyApiClient {
 		client = new DefaultHttpClient();
 	}
 
-	public GetClientContext<?> get(Class<?> dtoClass) {
+	public <T>GetClientContext<T> get(Class<T> dtoClass) {
 		return get(dtoClass, null);
 	}
 

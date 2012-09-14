@@ -24,6 +24,7 @@ import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.seasar.framework.exception.IORuntimeException;
+import org.seasar.framework.util.ClassUtil;
 import org.seasar.framework.util.ResourceUtil;
 import org.seasar.framework.util.StringUtil;
 
@@ -75,8 +76,9 @@ public class GetClientContext<T> extends ClientContext<T> {
 			InputStream in = entity.getContent();
 			if (StringUtil.equals(setting.getResponseType(), "plain")) {
 				XStream xstream = XStreamFactory.getInstance();
+				T dto = (T)ClassUtil.newInstance(dtoClass);
 				xstream.alias(setting.getRootElement(), dtoClass);
-				return (T)xstream.fromXML(in);
+				return (T)xstream.fromXML(in, dto);
 			} else {
 				XStreamFactory.setBodyDto(dtoClass);
 				ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(in);
