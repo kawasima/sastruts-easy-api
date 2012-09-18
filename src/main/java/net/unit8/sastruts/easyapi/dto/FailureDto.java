@@ -3,7 +3,6 @@ package net.unit8.sastruts.easyapi.dto;
 import java.io.Serializable;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
-import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 
 @SuppressWarnings("serial")
 @XStreamAlias("failure")
