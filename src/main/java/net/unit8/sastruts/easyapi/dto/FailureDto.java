@@ -8,10 +8,8 @@ import com.thoughtworks.xstream.annotations.XStreamAsAttribute;
 @SuppressWarnings("serial")
 @XStreamAlias("failure")
 public class FailureDto implements Serializable {
-	@XStreamAsAttribute
 	private String code;
-	
-	@XStreamAsAttribute
+
 	private String message;
 
 	public FailureDto(String code, String message) {

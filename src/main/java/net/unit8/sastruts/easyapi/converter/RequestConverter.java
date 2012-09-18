@@ -26,10 +26,12 @@ public class RequestConverter implements Converter {
 			MarshallingContext context) {
 		EasyApiMessageDto dto = (EasyApiMessageDto) source;
 		writer.startNode("head");
-		context.convertAnother(dto.header);
+		if (dto.header != null)
+			context.convertAnother(dto.header);
 		writer.endNode();
 		writer.startNode("body");
-		context.convertAnother(dto.body);
+		if (dto.body != null)
+			context.convertAnother(dto.body);
 		writer.endNode();
 	}
 

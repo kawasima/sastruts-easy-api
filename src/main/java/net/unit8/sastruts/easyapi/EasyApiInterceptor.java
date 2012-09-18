@@ -47,24 +47,24 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 			BeanDesc beanDesc = BeanDescFactory.getBeanDesc(action.getClass());
 
 			String requestDtoName = easyApiAnno.requestDto();
-			if (StringUtil.isNotEmpty(requestDtoName)) {
-				PropertyDesc requestPropDesc = beanDesc.getPropertyDesc(requestDtoName);
-
-				HttpServletRequest request = RequestUtil.getRequest();
-				transactionId = request.getHeader(transactionIdName);
-				InputStream in = request.getInputStream();
-				XStream xstream = XStreamFactory.getInstance();
-				XStreamFactory.setBodyDto(requestPropDesc.getPropertyType());
-				RequestDto requestDto = (RequestDto)xstream.fromXML(in);
-				requestPropDesc.setValue(action, requestDto.body);
-			}
-
 			ResponseDto responseDto = new ResponseDto();
 			HttpServletResponse response = ResponseUtil.getResponse();
-			response.setCharacterEncoding(encoding);
-			response.setContentType(contentType);
-
 			try {
+				if (StringUtil.isNotEmpty(requestDtoName)) {
+					PropertyDesc requestPropDesc = beanDesc.getPropertyDesc(requestDtoName);
+
+					HttpServletRequest request = RequestUtil.getRequest();
+					transactionId = request.getHeader(transactionIdName);
+					InputStream in = request.getInputStream();
+					XStream xstream = XStreamFactory.getInstance();
+					XStreamFactory.setBodyDto(requestPropDesc.getPropertyType());
+					RequestDto requestDto = (RequestDto)xstream.fromXML(in);
+					requestPropDesc.setValue(action, requestDto.body);
+				}
+
+				response.setCharacterEncoding(encoding);
+				response.setContentType(contentType);
+
 				ret = invocation.proceed();
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (EasyApiException cause) {
@@ -85,10 +85,12 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 			if (StringUtil.isNotEmpty(responseBodyName)) {
 				PropertyDesc responseBodyPropDesc = beanDesc.getPropertyDesc(responseBodyName);
 				responseDto.body = responseBodyPropDesc.getValue(action);
-				response.setHeader(transactionIdName, transactionId);
-				String responseXml = XStreamFactory.getInstance().toXML(responseDto);
-				response.getWriter().write(responseXml);
 			}
+			if (transactionId != null)
+				response.setHeader(transactionIdName, transactionId);
+
+			String responseXml = XStreamFactory.getInstance().toXML(responseDto);
+			response.getWriter().write(responseXml);
 		} else {
 			ret = invocation.proceed();
 		}

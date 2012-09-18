@@ -53,7 +53,7 @@ public class EasyApiTest {
 		S2Container container = SingletonS2ContainerFactory.getContainer();
 		ServletContext context = ServletContextUtil.getServletContext();
 		MockPostHttpServletRequest request = new MockPostHttpServletRequest(context, "/blog/post");
-		request.setRequestBody("<request><header/><body>"
+		request.setRequestBody("<request><head/><body>"
 				+ "<title>Blog</title>"
 				+ "<description>This is body.</description></body></request>");
 		container.getExternalContext().setRequest(request);
@@ -63,5 +63,42 @@ public class EasyApiTest {
 		MockHttpServletResponse response = (MockHttpServletResponse)ResponseUtil.getResponse();
 		assertThat(response.getStatus(), is(HttpServletResponse.SC_OK));
 		System.out.println(response.getResponseString());
+	}
+
+	@Test
+	public void testEmptyRequest() {
+		S2Container container = SingletonS2ContainerFactory.getContainer();
+		ServletContext context = ServletContextUtil.getServletContext();
+		MockPostHttpServletRequest request = new MockPostHttpServletRequest(context, "/blog/post");
+		request.setRequestBody("");
+		container.getExternalContext().setRequest(request);
+
+		Test02Action action = ctx.getComponent(Test02Action.class);
+		action.postArticle();
+		MockHttpServletResponse response = (MockHttpServletResponse)ResponseUtil.getResponse();
+		assertThat(response.getStatus(), is(HttpServletResponse.SC_INTERNAL_SERVER_ERROR));
+		System.out.println(response.getResponseString());
+	}
+
+	@Test
+	public void testPostFailure() {
+		S2Container container = SingletonS2ContainerFactory.getContainer();
+		ServletContext context = ServletContextUtil.getServletContext();
+		MockPostHttpServletRequest request = new MockPostHttpServletRequest(context, "/blog/post");
+		request.setRequestBody("<request><head/><body>"
+				+ "<title>Blog</title>"
+				+ "<description>This is body.</description></body></request>");
+		container.getExternalContext().setRequest(request);
+
+		Test02Action action = ctx.getComponent(Test02Action.class);
+		try {
+			action.postFailure();
+		} catch (EasyApiException e) {
+
+		}
+		MockHttpServletResponse response = (MockHttpServletResponse)ResponseUtil.getResponse();
+		assertThat(response.getStatus(), is(HttpServletResponse.SC_OK));
+		System.out.println(response.getResponseString());
+
 	}
 }
