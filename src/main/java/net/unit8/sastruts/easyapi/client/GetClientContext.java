@@ -30,6 +30,7 @@ import org.seasar.framework.util.ResourceUtil;
 import org.seasar.framework.util.StringUtil;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.mapper.CachingMapper;
 
 public class GetClientContext<T> extends ClientContext<T> {
 	@Resource(name="easyApiSettingProvider")
@@ -80,6 +81,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 			if (StringUtil.equals(setting.getResponseType(), "plain")) {
 				XStream xstream = XStreamFactory.getInstance();
 				T dto = (T)ClassUtil.newInstance(dtoClass);
+				((CachingMapper)xstream.getMapper()).flushCache();
 				xstream.alias(setting.getRootElement(), dtoClass);
 				return (T)xstream.fromXML(in, dto);
 			} else {
