@@ -16,8 +16,10 @@ import javax.annotation.Resource;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
+import net.unit8.sastruts.easyapi.MessageFormat;
 import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
+import net.unit8.sastruts.easyapi.xstream.io.CsvMappedXmlDriver;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -102,7 +104,9 @@ public class GetClientContext<T> extends ClientContext<T> {
 					XStream xstream = XStreamFactory.getInstance(setting.getResponseFormat());
 					((CachingMapper)xstream.getMapper()).flushCache();
 					xstream.alias(setting.getRootElement(), dtoClass);
-					return processIterate(in, callback);
+					if (setting.getResponseFormat() == MessageFormat.CSV)
+						CsvMappedXmlDriver.setRoot(setting.getRootElement());
+				return processIterate(in, callback);
 				} else {
 					XStreamFactory.setBodyDto(dtoClass);
 					return processIterate(in, callback);
@@ -129,6 +133,8 @@ public class GetClientContext<T> extends ClientContext<T> {
 				T dto = (T)ClassUtil.newInstance(dtoClass);
 				((CachingMapper)xstream.getMapper()).flushCache();
 				xstream.alias(setting.getRootElement(), dtoClass);
+				if (setting.getResponseFormat() == MessageFormat.CSV)
+					CsvMappedXmlDriver.setRoot(setting.getRootElement());
 				return (T)xstream.fromXML(in, dto);
 			} else {
 				XStreamFactory.setBodyDto(dtoClass);
@@ -212,6 +218,8 @@ public class GetClientContext<T> extends ClientContext<T> {
 			T dto = (T)ClassUtil.newInstance(dtoClass);
 			((CachingMapper)xstream.getMapper()).flushCache();
 			xstream.alias(setting.getRootElement(), dtoClass);
+			if (setting.getResponseFormat() == MessageFormat.CSV)
+				CsvMappedXmlDriver.setRoot(setting.getRootElement());
 			return (T)xstream.fromXML(dataFile, dto);
 		} else {
 			XStreamFactory.setBodyDto(dtoClass);

@@ -2,7 +2,18 @@ package net.unit8.sastruts.easyapi.client;
 
 import net.unit8.sastruts.easyapi.MessageFormat;
 
+import org.apache.commons.lang.StringUtils;
+import org.seasar.framework.container.ComponentDef;
+import org.seasar.framework.container.S2Container;
+import org.seasar.framework.container.annotation.tiger.Component;
+import org.seasar.framework.container.annotation.tiger.InitMethod;
+import org.seasar.framework.container.annotation.tiger.InstanceType;
+import org.seasar.framework.container.factory.SingletonS2ContainerFactory;
+import org.seasar.framework.log.Logger;
+
+@Component(instance=InstanceType.SINGLETON)
 public class EasyApiSetting {
+	private static final Logger logger = Logger.getLogger(EasyApiSetting.class);
 	/** Setting name */
 	private String scheme = "http";
 	private String name;
@@ -98,5 +109,24 @@ public class EasyApiSetting {
 	}
 	public void setResponseFormat(MessageFormat responseFormat) {
 		this.responseFormat = responseFormat;
+	}
+
+	@InitMethod
+	public void validate() {
+		S2Container container = SingletonS2ContainerFactory.getContainer();
+		ComponentDef[] defs = container.findComponentDefs(EasyApiSetting.class);
+		String path = null;
+		for (ComponentDef def : defs) {
+			EasyApiSetting setting = (EasyApiSetting)def.getComponent();
+			if (this == setting) {
+				setName(def.getComponentName());
+				path = def.getContainer().getPath();
+				break;
+			}
+		}
+		if (responseFormat == MessageFormat.CSV && !StringUtils.equals(responseType, "plain"))
+			logger.log("WSEA0003", new Object[]{path, name});
+		if (StringUtils.equals(responseType, "plain") && StringUtils.isEmpty(rootElement))
+			logger.log("WSEA0004", new Object[]{path, name});
 	}
 }

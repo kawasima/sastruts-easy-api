@@ -31,6 +31,7 @@
 		<property name="path">"/api/{id}"</property>
 		<property name="responseType">"plain"</property>
 		<property name="responseFormat">"CSV"</property>
+		<property name="rootElement">"user"</property>
 	</component>
 
 	<component name="people" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
@@ -38,6 +39,7 @@
 		<property name="path">"/api/{id}"</property>
 		<property name="responseType">"plain"</property>
 		<property name="responseFormat">"CSV"</property>
+		<property name="rootElement">"person"</property>
 	</component>
 
 	<component name="hotpepper" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
