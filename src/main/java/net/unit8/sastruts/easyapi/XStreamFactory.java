@@ -1,11 +1,14 @@
 package net.unit8.sastruts.easyapi;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentMap;
 
 import net.unit8.sastruts.easyapi.converter.RequestConverter;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
+import net.unit8.sastruts.easyapi.xstream.io.CsvMappedXmlDriver;
 
 import org.seasar.extension.jdbc.annotation.InOut;
 import org.seasar.extension.jdbc.annotation.Out;
@@ -18,13 +21,14 @@ import org.seasar.framework.util.tiger.CollectionsUtil;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import com.thoughtworks.xstream.io.xml.Xpp3DomDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 public class XStreamFactory {
-	private static XStream xstream;
+	private static Map<MessageFormat, XStream> xstreamCache = new HashMap<MessageFormat, XStream>();
 	private static RequestConverter requestConverter = new RequestConverter();
 	protected static final ConcurrentMap<Class<?>, DtoConfig> dtoConfigs = CollectionsUtil
 			.newConcurrentHashMap();
@@ -32,31 +36,78 @@ public class XStreamFactory {
 	protected XStreamFactory() {
 	}
 
-	public static synchronized XStream getInstance() {
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+	public static XStream getInstance(MessageFormat format) {
+		XStream xstream = xstreamCache.get(format);
 		if (xstream == null || HotdeployUtil.isHotdeploy()) {
-			xstream = new XStream(new Sun14ReflectionProvider(), new Xpp3DomDriver(new XmlFriendlyNameCoder("_-", "_")), loader) {
-				protected MapperWrapper wrapMapper(MapperWrapper next) {
-					return new MapperWrapper(next) {
-						@SuppressWarnings("rawtypes")
-						public boolean shouldSerializeMember(Class definedIn,
-								String fieldName) {
-							try {
-								return definedIn != Object.class
-										|| realClass(fieldName) != null;
-							} catch (CannotResolveClassException cnrce) {
-								return false;
-							}
-						}
-					};
+			synchronized (XStreamFactory.class) {
+				switch (format) {
+				case XML:
+					xstream = createDefaultXStream();
+					break;
+				case JSON:
+					xstream = createJsonXStream();
+					break;
+				case CSV:
+					xstream = createCsvXStream();
+					break;
 				}
-			};
-			xstream.autodetectAnnotations(true);
-			xstream.alias("request", RequestDto.class);
-			xstream.alias("response", ResponseDto.class);
-			xstream.registerConverter(requestConverter);
+				xstream.autodetectAnnotations(true);
+				xstream.alias("request", RequestDto.class);
+				xstream.alias("response", ResponseDto.class);
+				xstream.registerConverter(requestConverter);
+				xstreamCache.put(format, xstream);
+			}
 		}
 		return xstream;
+	}
+
+	public static XStream getInstance() {
+		return getInstance(MessageFormat.XML);
+	}
+
+	private static XStream createDefaultXStream() {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+
+		return new XStream(new Sun14ReflectionProvider(), new Xpp3DomDriver(new XmlFriendlyNameCoder("_-", "_")), loader) {
+			protected MapperWrapper wrapMapper(MapperWrapper next) {
+				return new MapperWrapper(next) {
+					@SuppressWarnings("rawtypes")
+					public boolean shouldSerializeMember(Class definedIn,
+							String fieldName) {
+						try {
+							return definedIn != Object.class
+									|| realClass(fieldName) != null;
+						} catch (CannotResolveClassException cnrce) {
+							return false;
+						}
+					}
+				};
+			}
+		};
+	}
+	private static XStream createJsonXStream() {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		return new XStream(new Sun14ReflectionProvider(), new JettisonMappedXmlDriver(), loader) {
+			protected MapperWrapper wrapMapper(MapperWrapper next) {
+				return new MapperWrapper(next) {
+					@SuppressWarnings("rawtypes")
+					public boolean shouldSerializeMember(Class definedIn,
+							String fieldName) {
+						try {
+							return definedIn != Object.class
+									|| realClass(fieldName) != null;
+						} catch (CannotResolveClassException cnrce) {
+							return false;
+						}
+					}
+				};
+			}
+		};
+	}
+
+	private static XStream createCsvXStream() {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		return new XStream(new Sun14ReflectionProvider(), new CsvMappedXmlDriver(), loader);
 	}
 
 	public static void setBodyDto(Class<?> bodyDto) {

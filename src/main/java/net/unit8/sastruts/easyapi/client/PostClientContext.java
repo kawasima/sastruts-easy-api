@@ -22,6 +22,7 @@ import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.seasar.framework.beans.BeanDesc;
 import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
@@ -93,13 +94,14 @@ public class PostClientContext<T> extends ClientContext<T> {
 		if (transactionIdName != null)
 			method.addHeader(transactionIdName, transactionId);
 		InputStream in = null;
+		HttpEntity entity = null;
 		try {
 			logger.log("ISEA0001", new Object[]{transactionId, name});
 			if (provider.useMock) {
 				in = getMockResponseStream();
 			} else {
 				HttpResponse response = client.execute(method);
-				HttpEntity entity = response.getEntity();
+				entity = response.getEntity();
 				in = entity.getContent();
 			}
 			Class<?> resultSetDtoClass = XStreamFactory.getResutSetClass(data);
@@ -108,7 +110,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 			} else {
 				XStreamFactory.setBodyDto(data.getClass());
 			}
-			ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance().fromXML(in);
+			ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance(setting.getResponseFormat()).fromXML(in);
 			processHeader(responseDto);
 			if (data != null && responseDto.body != null) {
 				XStreamFactory.setResponse(data, responseDto.body);
@@ -118,6 +120,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 		} finally {
 			logger.log("ISEA0002", new Object[]{transactionId, name});
 			IOUtils.closeQuietly(in);
+			EntityUtils.consumeQuietly(entity);
 		}
 		return 1;
 	}

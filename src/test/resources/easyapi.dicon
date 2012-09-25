@@ -20,6 +20,26 @@
 		<property name="path">"/api/{id}"</property>
 	</component>
 
+	<component name="familyRegisterJson" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"example.com"</property>
+		<property name="path">"/api/{id}"</property>
+		<property name="responseFormat">"JSON"</property>
+	</component>
+
+	<component name="familyRegisterCsv" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"example.com"</property>
+		<property name="path">"/api/{id}"</property>
+		<property name="responseType">"plain"</property>
+		<property name="responseFormat">"CSV"</property>
+	</component>
+
+	<component name="people" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"example.com"</property>
+		<property name="path">"/api/{id}"</property>
+		<property name="responseType">"plain"</property>
+		<property name="responseFormat">"CSV"</property>
+	</component>
+
 	<component name="hotpepper" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
 		<property name="host">"webservice.recruit.co.jp"</property>
 		<property name="path">"/hotpepper/gourmet/v1/"</property>
@@ -32,10 +52,8 @@
 		<property name="path">"/api/{id}"</property>
 		<property name="requestType">"URL_ENCODE"</property>
 	</component>
+
 	<component name="easyApiSettingProvider" class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
 		<property name="useMock">true</property>
-		<initMethod name="register">
-			<arg>{"familyRegister", "citiBank", "hotpepper", "paramPost"}</arg>
-		</initMethod>
 	</component>
 </components>

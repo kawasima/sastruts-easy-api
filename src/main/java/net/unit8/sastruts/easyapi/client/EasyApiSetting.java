@@ -1,6 +1,6 @@
 package net.unit8.sastruts.easyapi.client;
 
-import net.unit8.sastruts.easyapi.RequestType;
+import net.unit8.sastruts.easyapi.MessageFormat;
 
 public class EasyApiSetting {
 	/** Setting name */
@@ -14,7 +14,8 @@ public class EasyApiSetting {
 	private int socketTimeout = 10 * 1000;
 	private String encoding = "UTF-8";
 	private String responseType = "message";
-	private RequestType requestType = RequestType.XML;
+	private MessageFormat requestType = MessageFormat.XML;
+	private MessageFormat responseFormat = MessageFormat.XML;
 
 	private String rootElement;
 
@@ -62,10 +63,10 @@ public class EasyApiSetting {
 		this.encoding = encoding;
 	}
 
-	public RequestType getRequestType() {
+	public MessageFormat getRequestType() {
 		return requestType;
 	}
-	public void setRequestType(RequestType requestType) {
+	public void setRequestType(MessageFormat requestType) {
 		this.requestType = requestType;
 	}
 	public String getResponseType() {
@@ -91,5 +92,11 @@ public class EasyApiSetting {
 	}
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
+	}
+	public MessageFormat getResponseFormat() {
+		return responseFormat;
+	}
+	public void setResponseFormat(MessageFormat responseFormat) {
+		this.responseFormat = responseFormat;
 	}
 }
