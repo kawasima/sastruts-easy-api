@@ -14,6 +14,11 @@ public class EasyApiException extends Exception {
 		this.messageCode = messageCode;
 	}
 
+	public EasyApiException(String messageCode, String message) {
+		this.messageCode = messageCode;
+		this.message = message;
+	}
+
 	public EasyApiException append(EasyApiException e) {
 		EasyApiException lastException = this;
 		// TODO Need a cyclic reference stopper.
