@@ -6,12 +6,9 @@ import static org.junit.Assert.assertThat;
 import java.util.List;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
-import net.unit8.sastruts.easyapi.MessageFormat;
-import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.testapp.dto.MuchMoneyDto;
 import net.unit8.sastruts.easyapi.testapp.dto.PersonDto;
 import net.unit8.sastruts.easyapi.testapp.dto.UserDto;
-import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
