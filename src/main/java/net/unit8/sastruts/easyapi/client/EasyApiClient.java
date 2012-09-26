@@ -72,7 +72,7 @@ public class EasyApiClient {
 		PostClientContext<T> ctx = SingletonS2Container.getComponent("postClientContext");
 		ctx.setClient(client);
 		ctx.setDto(data);
-		if (query == null) {
+		if (query != null) {
 			ctx.setQuery(query);
 		}
 		return ctx;
