@@ -3,6 +3,7 @@ package net.unit8.sastruts.easyapi.xstream.io;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -17,9 +18,9 @@ import com.thoughtworks.xstream.io.xml.QNameMap;
 import com.thoughtworks.xstream.io.xml.StaxReader;
 import com.thoughtworks.xstream.io.xml.StaxWriter;
 
-public class CsvMappedXmlDriver extends AbstractDriver {
+public class CsvStreamXmlDriver extends AbstractDriver {
 	private static ThreadLocal<String> root = new ThreadLocal<String>();
-	public CsvMappedXmlDriver() {
+	public CsvStreamXmlDriver() {
 	}
 	public static void setRoot(String name) {
 		root.set(name);
@@ -42,14 +43,19 @@ public class CsvMappedXmlDriver extends AbstractDriver {
 	public HierarchicalStreamWriter createWriter(final Writer writer) {
 		try {
 			return new StaxWriter(new QNameMap(),
-					new CsvXmlStreamWriter(writer), getNameCoder());
+					new CsvXmlStreamWriter(writer, root.get()), getNameCoder());
 		} catch (XMLStreamException e) {
 			throw new StreamException(e);
 		}
 	}
 
 	public HierarchicalStreamWriter createWriter(OutputStream out) {
-		return null;
+		Writer writer;
+		try {
+			writer = new OutputStreamWriter(out, "UTF-8");
+			return new StaxWriter(new QNameMap(),  new CsvXmlStreamWriter(writer, root.get()), getNameCoder());
+		} catch (Exception e) {
+			throw new StreamException(e);
+		}
 	}
-
 }
