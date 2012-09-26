@@ -121,7 +121,7 @@ public class CsvXmlStreamWriter implements XMLStreamWriter {
 
 	public void writeEmptyElement(String namespaceURI, String localName)
 			throws XMLStreamException {
-		writeEmptyElement(localName, namespaceURI);
+		writeEmptyElement(null, localName, namespaceURI);
 	}
 
 	public void writeEmptyElement(String prefix, String localName, String namespaceURI)
