@@ -86,8 +86,6 @@ public class EasyApiClientTest {
 		BeanMap query = new BeanMap();
 		query.put("id", "3");
 		query.put("name", "hogehoge");
-		CsvStreamXmlDriver.setRoot("person");
-		XStreamFactory.getInstance(MessageFormat.CSV).alias("person", PersonDto.class);
 
 		int res = client
 				.get(PersonDto.class, query)
