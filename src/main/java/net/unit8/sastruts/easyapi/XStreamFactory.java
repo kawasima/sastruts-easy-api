@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentMap;
 import net.unit8.sastruts.easyapi.converter.RequestConverter;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
-import net.unit8.sastruts.easyapi.xstream.io.CsvMappedXmlDriver;
+import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
 
 import org.seasar.extension.jdbc.annotation.InOut;
 import org.seasar.extension.jdbc.annotation.Out;
@@ -107,7 +107,7 @@ public class XStreamFactory {
 
 	private static XStream createCsvXStream() {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		return new XStream(new Sun14ReflectionProvider(), new CsvMappedXmlDriver(), loader);
+		return new XStream(new Sun14ReflectionProvider(), new CsvStreamXmlDriver(), loader);
 	}
 
 	public static void setBodyDto(Class<?> bodyDto) {

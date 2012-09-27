@@ -128,9 +128,9 @@ public abstract class ClientContext<T> {
 			if (responseDto.header.failures != null) {
 				for (FailureDto failure : responseDto.header.failures) {
 					if (ex == null) {
-						ex = new EasyApiException(failure.getCode());
+						ex = new EasyApiException(failure.getCode(), failure.getMessage());
 					} else {
-						ex.append(new EasyApiException(failure.getCode()));
+						ex.append(new EasyApiException(failure.getCode(), failure.getMessage()));
 					}
 				}
 			}

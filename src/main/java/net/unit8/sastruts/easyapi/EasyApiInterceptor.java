@@ -19,6 +19,7 @@ import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.container.annotation.tiger.Binding;
 import org.seasar.framework.container.annotation.tiger.BindingType;
+import org.seasar.framework.log.Logger;
 import org.seasar.framework.util.StringUtil;
 import org.seasar.struts.util.RequestUtil;
 import org.seasar.struts.util.ResponseUtil;
@@ -27,6 +28,11 @@ import com.thoughtworks.xstream.XStream;
 
 @SuppressWarnings("serial")
 public class EasyApiInterceptor extends AbstractInterceptor {
+	private static final Logger logger = Logger.getLogger(EasyApiInterceptor.class);
+
+	@Binding(bindingType=BindingType.MAY)
+	public String systemErrorCode = "9999";
+
 	@Binding(bindingType=BindingType.MAY)
 	public String transactionIdName = "X-Transaction-Id";
 
@@ -68,6 +74,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				ret = invocation.proceed();
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (EasyApiException cause) {
+				logger.warn(cause.getMessage(), cause);
 				Iterator<EasyApiException> iter = cause.iterator();
 				responseDto.header.failures = new ArrayList<FailureDto>();
 				while(iter.hasNext()) {
@@ -76,8 +83,9 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				}
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (Throwable e) {
+				logger.error(e.getMessage(), e);
 				responseDto.header.errors = new ArrayList<ErrorDto>();
-				responseDto.header.errors.add(new ErrorDto("9999", e.getMessage()));
+				responseDto.header.errors.add(new ErrorDto(systemErrorCode, e.getMessage()));
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 			}
 

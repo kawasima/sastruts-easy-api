@@ -6,12 +6,9 @@ import static org.junit.Assert.assertThat;
 import java.util.List;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
-import net.unit8.sastruts.easyapi.MessageFormat;
-import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.testapp.dto.MuchMoneyDto;
 import net.unit8.sastruts.easyapi.testapp.dto.PersonDto;
 import net.unit8.sastruts.easyapi.testapp.dto.UserDto;
-import net.unit8.sastruts.easyapi.xstream.io.CsvMappedXmlDriver;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -86,8 +83,6 @@ public class EasyApiClientTest {
 		BeanMap query = new BeanMap();
 		query.put("id", "3");
 		query.put("name", "hogehoge");
-		CsvMappedXmlDriver.setRoot("person");
-		XStreamFactory.getInstance(MessageFormat.CSV).alias("person", PersonDto.class);
 
 		int res = client
 				.get(PersonDto.class, query)

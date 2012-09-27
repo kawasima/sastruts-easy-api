@@ -47,9 +47,6 @@ APIを実行するにはEasyApiClientを使います。
 	</component>
 	<component class="net.unit8.sastruts.easyapi.client.EasyApiSettingProvider">
 		<property name="useMock">#ENV == 'ut' || #ENV == 'ct'</property>
-		<initMethod name="register">
-			<arg>{"familyRegister"}</arg>
-		</initMethod>
 	</component>
 
 パスにはパラメータを含むことができます。これはEasyApiClientのgetメソッドの第2引数で渡すパラメータオブジェクト(JavaBeanまたはMap)にある
@@ -71,6 +68,47 @@ APIを実行するにはEasyApiClientを使います。
 		}
 	}
 
+### APIサーバがEasyApiでない場合
+
+EasyApiClientはEasyApi同士の通信以外でも利用できます。
+
+	<component name="hotpepper" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"webservice.recruit.co.jp"</property>
+		<property name="path">"/hotpepper/gourmet/v1/"</property>
+		<property name="responseType">"plain"</property>
+		<property name="rootElement">"results"</property>
+	</component>
+
+上記のように、responseType に plain を設定し、rootElement にXMLのルート要素名を設定してください。
+
+## FAQ
+
+### APIサーバがJSONやCSVを返してくるんだけど…
+
+		<property name="responseFormat">"CSV"</property>
+
+responseFormat というプロパティに、JSON または CSVを設定してください。
+CSVの場合は1レコードが1つのDTOにマッピングされるので、getSingleResult での呼び出しは出来ません。
+getResultList または iterate を使ってください。
+
+### レスポンスサイズが非常に大きいんだけど…
+
+getSingleResult、getResultList の代わりに、iterate を使ってください。
+
+現在 responseFormat が CSV の場合のみサポートしていますが、1件ずつデシリアライズして処理することが可能です。
+したがってメモリを大量消費することがありません。
+
+		int res = client
+				.get(PersonDto.class, query)
+				.from("people")
+				.iterate(new IterationCallback<PersonDto, Integer>() {
+					int i=0;
+					@Override
+					public Integer iterate(PersonDto person, IterationContext context) {
+						System.out.println((i++) + ":" + person.name);
+						return i;
+					}
+				});
 
 ## License
 
