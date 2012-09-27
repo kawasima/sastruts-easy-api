@@ -12,7 +12,7 @@ import net.unit8.sastruts.easyapi.MessageFormat;
 import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
-import net.unit8.sastruts.easyapi.xstream.io.CsvMappedXmlDriver;
+import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -129,7 +129,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 				((CachingMapper)xstream.getMapper()).flushCache();
 				xstream.alias(setting.getRootElement(), XStreamFactory.getBodyDto());
 				if (setting.getResponseFormat() == MessageFormat.CSV)
-					CsvMappedXmlDriver.setRoot(setting.getRootElement());
+					CsvStreamXmlDriver.setRoot(setting.getRootElement());
 				xstream.fromXML(in, dto);
 				XStreamFactory.setResponse(data, dto);
 			} else {
