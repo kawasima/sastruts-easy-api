@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import javax.annotation.Resource;
-
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
 import net.unit8.sastruts.easyapi.MessageFormat;
@@ -30,10 +28,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
-import org.apache.http.conn.params.ConnRoutePNames;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpConnectionParams;
-import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.seasar.extension.jdbc.IterationCallback;
 import org.seasar.extension.jdbc.IterationContext;
@@ -44,9 +38,6 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.mapper.CachingMapper;
 
 public class GetClientContext<T> extends ClientContext<T> {
-	@Resource(name="easyApiSettingProvider")
-	private EasyApiSettingProvider provider;
-
 	private Class<T> dtoClass;
 
 	public GetClientContext() {
@@ -56,6 +47,10 @@ public class GetClientContext<T> extends ClientContext<T> {
 	public GetClientContext<T> from(String name) throws EasyApiException {
 		this.name = name;
 		return this;
+	}
+
+	public GetClientContext<T> addHeader(String name, String value) {
+		return (GetClientContext<T>)super.addHeader(name, value);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -164,12 +159,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 	private HttpEntity processHttpRequest() throws ClientProtocolException, IOException {
 		EasyApiSetting setting = provider.get(name);
 		HttpGet method = new HttpGet(buildUri(setting));
-		HttpParams httpParams = new BasicHttpParams();
-		if (proxy != null)
-			httpParams.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
-		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getConnectionTimeout());
-		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getSocketTimeout());
-		method.setParams(httpParams);
+		processRequestHeaders(method);
 		HttpResponse response = client.execute(method);
 		return response.getEntity();
 	}

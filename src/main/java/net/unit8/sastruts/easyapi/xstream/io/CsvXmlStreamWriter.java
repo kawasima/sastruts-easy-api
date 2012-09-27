@@ -1,7 +1,6 @@
 package net.unit8.sastruts.easyapi.xstream.io;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Writer;
 
 import javax.xml.namespace.NamespaceContext;

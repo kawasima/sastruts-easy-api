@@ -7,14 +7,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import javax.annotation.Resource;
-
 import net.unit8.sastruts.easyapi.EasyApiException;
+import net.unit8.sastruts.easyapi.MessageFormat;
 import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
+import net.unit8.sastruts.easyapi.xstream.io.CsvMappedXmlDriver;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -28,16 +29,17 @@ import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.exception.IORuntimeException;
 import org.seasar.framework.log.Logger;
+import org.seasar.framework.util.ClassUtil;
 import org.seasar.framework.util.StringConversionUtil;
 import org.seasar.framework.util.tiger.CollectionsUtil;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import com.thoughtworks.xstream.mapper.CachingMapper;
 
 public class PostClientContext<T> extends ClientContext<T> {
 	private static final Logger logger = Logger.getLogger(ClientContext.class);
-
-	@Resource(name="easyApiSettingProvider")
-	private EasyApiSettingProvider provider;
 
 	private Object data;
 
@@ -53,25 +55,34 @@ public class PostClientContext<T> extends ClientContext<T> {
 	public int execute() throws EasyApiException {
 		EasyApiSetting setting = provider.get(name);
 		HttpPost method = new HttpPost(buildUri(setting));
+		processRequestHeaders(method);
 		if (data != null) {
 			XStreamFactory.setOmitFields(data);
 			HttpEntity entity = null;
 			switch (setting.getRequestType()) {
 			case URL_ENCODE:
 				List<NameValuePair> parameters = CollectionsUtil.newArrayList();
-				BeanDesc beanDesc = BeanDescFactory.getBeanDesc(data.getClass());
-				for (int i=0; i < beanDesc.getPropertyDescSize(); i++) {
+				BeanDesc beanDesc = BeanDescFactory
+						.getBeanDesc(data.getClass());
+				for (int i = 0; i < beanDesc.getPropertyDescSize(); i++) {
 					PropertyDesc propertyDesc = beanDesc.getPropertyDesc(i);
-					if (propertyDesc.getField().getAnnotation(XStreamOmitField.class) == null) {
+					if (propertyDesc.getField().getAnnotation(
+							XStreamOmitField.class) == null) {
 						Object value = propertyDesc.getValue(data);
 						if (value != null) {
+							XStreamAlias aliasAnno = propertyDesc.getField()
+									.getAnnotation(XStreamAlias.class);
 							parameters.add(new BasicNameValuePair(
-									propertyDesc.getPropertyName(), StringConversionUtil.toString(value)));
+									aliasAnno == null ? propertyDesc
+											.getPropertyName() : aliasAnno
+											.value(), StringConversionUtil
+											.toString(value)));
 						}
 					}
 				}
 				try {
-					entity = new UrlEncodedFormEntity(parameters, setting.getEncoding());
+					entity = new UrlEncodedFormEntity(parameters,
+							setting.getEncoding());
 				} catch (UnsupportedEncodingException e) {
 					throw new IORuntimeException(e);
 				}
@@ -96,11 +107,12 @@ public class PostClientContext<T> extends ClientContext<T> {
 		InputStream in = null;
 		HttpEntity entity = null;
 		try {
-			logger.log("ISEA0001", new Object[]{transactionId, name});
+			logger.log("ISEA0001", new Object[] { transactionId, name });
 			if (provider.useMock) {
 				in = getMockResponseStream();
 			} else {
 				HttpResponse response = client.execute(method);
+				logger.error(response.getStatusLine());
 				entity = response.getEntity();
 				in = entity.getContent();
 			}
@@ -110,15 +122,28 @@ public class PostClientContext<T> extends ClientContext<T> {
 			} else {
 				XStreamFactory.setBodyDto(data.getClass());
 			}
-			ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance(setting.getResponseFormat()).fromXML(in);
-			processHeader(responseDto);
-			if (data != null && responseDto.body != null) {
-				XStreamFactory.setResponse(data, responseDto.body);
+
+			if (StringUtils.equals(setting.getResponseType(), "plain")) {
+				XStream xstream = XStreamFactory.getInstance(setting.getResponseFormat());
+				Object dto = ClassUtil.newInstance(XStreamFactory.getBodyDto());
+				((CachingMapper)xstream.getMapper()).flushCache();
+				xstream.alias(setting.getRootElement(), XStreamFactory.getBodyDto());
+				if (setting.getResponseFormat() == MessageFormat.CSV)
+					CsvMappedXmlDriver.setRoot(setting.getRootElement());
+				xstream.fromXML(in, dto);
+				XStreamFactory.setResponse(data, dto);
+			} else {
+				ResponseDto responseDto = (ResponseDto) XStreamFactory.getInstance(
+					setting.getResponseFormat()).fromXML(in);
+				processHeader(responseDto);
+				if (data != null && responseDto.body != null) {
+					XStreamFactory.setResponse(data, responseDto.body);
+				}
 			}
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		} finally {
-			logger.log("ISEA0002", new Object[]{transactionId, name});
+			logger.log("ISEA0002", new Object[] { transactionId, name });
 			IOUtils.closeQuietly(in);
 			EntityUtils.consumeQuietly(entity);
 		}
@@ -131,6 +156,10 @@ public class PostClientContext<T> extends ClientContext<T> {
 
 	public void setDto(Object data) {
 		this.data = data;
+	}
+
+	public PostClientContext<T> addHeader(String name, String value) {
+		return (PostClientContext<T>) super.addHeader(name, value);
 	}
 
 }

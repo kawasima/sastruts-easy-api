@@ -11,6 +11,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Resource;
+
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
 import net.unit8.sastruts.easyapi.dto.ErrorDto;
@@ -22,11 +24,18 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.http.HttpHost;
+import org.apache.http.HttpMessage;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.http.conn.params.ConnRoutePNames;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.message.HeaderGroup;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.seasar.framework.beans.BeanDesc;
 import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
@@ -42,6 +51,10 @@ public abstract class ClientContext<T> {
 	protected List<NameValuePair> params = new ArrayList<NameValuePair>();
 	protected String name;
 	protected HttpHost proxy;
+	protected HeaderGroup headerGroup;
+
+	@Resource(name="easyApiSettingProvider")
+	protected EasyApiSettingProvider provider;
 
 	@Binding(bindingType=BindingType.NONE)
 	protected HttpClient client;
@@ -49,6 +62,24 @@ public abstract class ClientContext<T> {
 	@Binding(bindingType=BindingType.MAY)
 	public String transactionIdName;
 
+	public ClientContext<T> addHeader(String name, String value) {
+		if (headerGroup == null)
+			headerGroup = new HeaderGroup();
+		headerGroup.addHeader(new BasicHeader(name, value));
+		return this;
+	}
+
+	protected void processRequestHeaders(HttpMessage method) {
+		EasyApiSetting setting = provider.get(name);
+		if (headerGroup != null)
+			method.setHeaders(headerGroup.getAllHeaders());
+		HttpParams httpParams = new BasicHttpParams();
+		if (proxy != null)
+			httpParams.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
+		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getConnectionTimeout());
+		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getSocketTimeout());
+		method.setParams(httpParams);
+	}
 
 	public void setQuery(Object query) {
 		if (query == null) return;

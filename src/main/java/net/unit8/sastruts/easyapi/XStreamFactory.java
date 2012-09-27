@@ -114,6 +114,10 @@ public class XStreamFactory {
 		requestConverter.bodyDtoClass.set(bodyDto);
 	}
 
+	public static Class<?> getBodyDto() {
+		return requestConverter.bodyDtoClass.get();
+	}
+
 	public static DtoConfig configureDto(Object dto) {
 		final Field[] fields = ClassUtil.getDeclaredFields(dto.getClass());
 		DtoConfig config = new DtoConfig();
