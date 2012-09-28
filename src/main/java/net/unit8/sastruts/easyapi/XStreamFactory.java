@@ -9,6 +9,7 @@ import net.unit8.sastruts.easyapi.converter.RequestConverter;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
+import net.unit8.sastruts.easyapi.xstream.io.JettisonMappedXmlWrapperDriver;
 
 import org.seasar.extension.jdbc.annotation.InOut;
 import org.seasar.extension.jdbc.annotation.Out;
@@ -20,8 +21,8 @@ import org.seasar.framework.util.ModifierUtil;
 import org.seasar.framework.util.tiger.CollectionsUtil;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.extended.ISO8601DateConverter;
 import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import com.thoughtworks.xstream.io.xml.Xpp3DomDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
@@ -55,6 +56,7 @@ public class XStreamFactory {
 				xstream.alias("request", RequestDto.class);
 				xstream.alias("response", ResponseDto.class);
 				xstream.registerConverter(requestConverter);
+				xstream.registerConverter(new ISO8601DateConverter());
 				xstreamCache.put(format, xstream);
 			}
 		}
@@ -87,7 +89,7 @@ public class XStreamFactory {
 	}
 	private static XStream createJsonXStream() {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		return new XStream(new Sun14ReflectionProvider(), new JettisonMappedXmlDriver(), loader) {
+		return new XStream(new Sun14ReflectionProvider(), new JettisonMappedXmlWrapperDriver(), loader) {
 			protected MapperWrapper wrapMapper(MapperWrapper next) {
 				return new MapperWrapper(next) {
 					@SuppressWarnings("rawtypes")

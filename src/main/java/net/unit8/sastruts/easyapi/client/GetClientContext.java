@@ -16,8 +16,10 @@ import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
 import net.unit8.sastruts.easyapi.MessageFormat;
 import net.unit8.sastruts.easyapi.XStreamFactory;
+import net.unit8.sastruts.easyapi.client.handler.MessageHandler;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
+import net.unit8.sastruts.easyapi.xstream.io.JettisonMappedXmlWrapperDriver;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -117,7 +119,6 @@ public class GetClientContext<T> extends ClientContext<T> {
 				EntityUtils.consumeQuietly(entity);
 			}
 		}
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -128,24 +129,8 @@ public class GetClientContext<T> extends ClientContext<T> {
 		try {
 			entity = processHttpRequest();
 			InputStream in = entity.getContent();
-			if (StringUtils.equals(setting.getResponseType(), "plain")) {
-				XStream xstream = XStreamFactory.getInstance(setting.getResponseFormat());
-				T dto = (T)ClassUtil.newInstance(dtoClass);
-				((CachingMapper)xstream.getMapper()).flushCache();
-				xstream.alias(setting.getRootElement(), dtoClass);
-				if (setting.getResponseFormat() == MessageFormat.CSV)
-					CsvStreamXmlDriver.setRoot(setting.getRootElement());
-				return (T)xstream.fromXML(in, dto);
-			} else {
-				XStreamFactory.setBodyDto(dtoClass);
-				ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance(setting.getResponseFormat()).fromXML(in);
-				processHeader(responseDto);
-				if (dtoClass.isInstance(responseDto.body)) {
-					return (T)responseDto.body;
-				} else {
-					throw new EasyApiSystemException("mismatch DTO type.");
-				}
-			}
+			MessageHandler handler = MessageHandlerProvider.get(setting.getResponseType());
+			handler.process();
 		} catch (IOException e) {
 			throw new EasyApiSystemException(e);
 		} finally {
