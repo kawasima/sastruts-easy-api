@@ -1,22 +1,18 @@
 package net.unit8.sastruts.easyapi.client.handler;
 
+import java.io.InputStream;
+
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
-import net.unit8.sastruts.easyapi.MessageFormat;
 import net.unit8.sastruts.easyapi.XStreamFactory;
+import net.unit8.sastruts.easyapi.client.EasyApiSetting;
 import net.unit8.sastruts.easyapi.dto.ErrorDto;
 import net.unit8.sastruts.easyapi.dto.FailureDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
-import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
-import net.unit8.sastruts.easyapi.xstream.io.JettisonMappedXmlWrapperDriver;
-
-import org.seasar.framework.util.ClassUtil;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.mapper.CachingMapper;
 
 public class EasyApiMessageHandler<T> implements MessageHandler<T> {
-	public Object handle() {
+	@SuppressWarnings("unchecked")
+	public T handle(InputStream in, Class<T> dtoClass, EasyApiSetting setting) throws EasyApiException{
 		XStreamFactory.setBodyDto(dtoClass);
 		ResponseDto responseDto = (ResponseDto)XStreamFactory.getInstance(setting.getResponseFormat()).fromXML(in);
 		processHeader(responseDto);
@@ -25,6 +21,16 @@ public class EasyApiMessageHandler<T> implements MessageHandler<T> {
 		} else {
 			throw new EasyApiSystemException("mismatch DTO type.");
 		}
+	}
+
+	public T handle(InputStream in, T dto, EasyApiSetting setting) throws EasyApiException {
+		ResponseDto responseDto = (ResponseDto) XStreamFactory.getInstance(
+				setting.getResponseFormat()).fromXML(in);
+		processHeader(responseDto);
+		if (dto != null && responseDto.body != null) {
+			XStreamFactory.setResponse(dto, responseDto.body);
+		}
+		return dto;
 	}
 
 	private void processHeader(ResponseDto responseDto) throws EasyApiException {

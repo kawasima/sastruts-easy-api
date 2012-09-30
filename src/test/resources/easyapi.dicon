@@ -3,6 +3,7 @@
 	"http://www.seasar.org/dtd/components24.dtd">
 <components>
 	<component name="easyApiInterceptor" class="net.unit8.sastruts.easyapi.EasyApiInterceptor" instance="request"/>
+	<component name="messageHandlerProvider" class="net.unit8.sastruts.easyapi.client.handler.MessageHandlerProvider"/>
 	<component name="postClientContext"  class="net.unit8.sastruts.easyapi.client.PostClientContext" instance="prototype">
 		<property name="transactionIdName">"X-TRANSACTION-ID"</property>
 	</component>

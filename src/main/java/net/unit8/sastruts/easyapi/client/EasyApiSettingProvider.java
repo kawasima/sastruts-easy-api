@@ -7,9 +7,12 @@ import java.util.Set;
 import org.seasar.framework.container.ComponentDef;
 import org.seasar.framework.container.S2Container;
 import org.seasar.framework.container.SingletonS2Container;
+import org.seasar.framework.container.annotation.tiger.Component;
 import org.seasar.framework.container.annotation.tiger.InitMethod;
+import org.seasar.framework.container.annotation.tiger.InstanceType;
 import org.seasar.framework.container.factory.SingletonS2ContainerFactory;
 
+@Component(instance=InstanceType.SINGLETON)
 public class EasyApiSettingProvider {
 	public boolean useMock = false;
 	private Set<String> settingNames;

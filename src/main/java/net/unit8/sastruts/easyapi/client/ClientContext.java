@@ -15,6 +15,7 @@ import javax.annotation.Resource;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
 import net.unit8.sastruts.easyapi.EasyApiSystemException;
+import net.unit8.sastruts.easyapi.client.handler.MessageHandlerProvider;
 import net.unit8.sastruts.easyapi.dto.ErrorDto;
 import net.unit8.sastruts.easyapi.dto.FailureDto;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
@@ -54,7 +55,10 @@ public abstract class ClientContext<T> {
 	protected HeaderGroup headerGroup;
 
 	@Resource(name="easyApiSettingProvider")
-	protected EasyApiSettingProvider provider;
+	protected EasyApiSettingProvider settingProvider;
+
+	@Resource(name="messageHandlerProvider")
+	protected MessageHandlerProvider<T> handlerProvider;
 
 	@Binding(bindingType=BindingType.NONE)
 	protected HttpClient client;
@@ -70,7 +74,7 @@ public abstract class ClientContext<T> {
 	}
 
 	protected void processRequestHeaders(HttpMessage method) {
-		EasyApiSetting setting = provider.get(name);
+		EasyApiSetting setting = settingProvider.get(name);
 		if (headerGroup != null)
 			method.setHeaders(headerGroup.getAllHeaders());
 		HttpParams httpParams = new BasicHttpParams();

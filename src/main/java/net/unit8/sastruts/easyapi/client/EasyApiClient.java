@@ -64,11 +64,11 @@ public class EasyApiClient {
 		return ctx;
 	}
 
-	public <T>PostClientContext<T> post(Object data) {
+	public <T>PostClientContext<T> post(T data) {
 		return post(data, null);
 	}
 
-	public <T>PostClientContext<T> post(Object data, Object query) {
+	public <T>PostClientContext<T> post(T data, Object query) {
 		PostClientContext<T> ctx = SingletonS2Container.getComponent("postClientContext");
 		ctx.setClient(client);
 		ctx.setDto(data);

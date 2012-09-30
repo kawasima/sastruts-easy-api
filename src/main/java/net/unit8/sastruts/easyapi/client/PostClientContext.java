@@ -8,14 +8,11 @@ import java.util.List;
 import java.util.UUID;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
-import net.unit8.sastruts.easyapi.MessageFormat;
 import net.unit8.sastruts.easyapi.XStreamFactory;
+import net.unit8.sastruts.easyapi.client.handler.MessageHandler;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
-import net.unit8.sastruts.easyapi.dto.ResponseDto;
-import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -29,19 +26,16 @@ import org.seasar.framework.beans.PropertyDesc;
 import org.seasar.framework.beans.factory.BeanDescFactory;
 import org.seasar.framework.exception.IORuntimeException;
 import org.seasar.framework.log.Logger;
-import org.seasar.framework.util.ClassUtil;
 import org.seasar.framework.util.StringConversionUtil;
 import org.seasar.framework.util.tiger.CollectionsUtil;
 
-import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
-import com.thoughtworks.xstream.mapper.CachingMapper;
 
 public class PostClientContext<T> extends ClientContext<T> {
 	private static final Logger logger = Logger.getLogger(ClientContext.class);
 
-	private Object data;
+	private T data;
 
 	public PostClientContext() {
 		params = new ArrayList<NameValuePair>();
@@ -53,7 +47,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 	}
 
 	public int execute() throws EasyApiException {
-		EasyApiSetting setting = provider.get(name);
+		EasyApiSetting setting = settingProvider.get(name);
 		HttpPost method = new HttpPost(buildUri(setting));
 		processRequestHeaders(method);
 		if (data != null) {
@@ -108,7 +102,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 		HttpEntity entity = null;
 		try {
 			logger.log("ISEA0001", new Object[] { transactionId, name });
-			if (provider.useMock) {
+			if (settingProvider.useMock) {
 				in = getMockResponseStream();
 			} else {
 				HttpResponse response = client.execute(method);
@@ -122,24 +116,8 @@ public class PostClientContext<T> extends ClientContext<T> {
 			} else {
 				XStreamFactory.setBodyDto(data.getClass());
 			}
-
-			if (StringUtils.equals(setting.getResponseType(), "plain")) {
-				XStream xstream = XStreamFactory.getInstance(setting.getResponseFormat());
-				Object dto = ClassUtil.newInstance(XStreamFactory.getBodyDto());
-				((CachingMapper)xstream.getMapper()).flushCache();
-				xstream.alias(setting.getRootElement(), XStreamFactory.getBodyDto());
-				if (setting.getResponseFormat() == MessageFormat.CSV)
-					CsvStreamXmlDriver.setRoot(setting.getRootElement());
-				xstream.fromXML(in, dto);
-				XStreamFactory.setResponse(data, dto);
-			} else {
-				ResponseDto responseDto = (ResponseDto) XStreamFactory.getInstance(
-					setting.getResponseFormat()).fromXML(in);
-				processHeader(responseDto);
-				if (data != null && responseDto.body != null) {
-					XStreamFactory.setResponse(data, responseDto.body);
-				}
-			}
+			MessageHandler<T> handler = handlerProvider.get(setting.getResponseType());
+			handler.handle(in, data, setting);
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		} finally {
@@ -154,7 +132,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 		return this.data;
 	}
 
-	public void setDto(Object data) {
+	public void setDto(T data) {
 		this.data = data;
 	}
 

@@ -19,7 +19,6 @@ import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.client.handler.MessageHandler;
 import net.unit8.sastruts.easyapi.dto.ResponseDto;
 import net.unit8.sastruts.easyapi.xstream.io.CsvStreamXmlDriver;
-import net.unit8.sastruts.easyapi.xstream.io.JettisonMappedXmlWrapperDriver;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -72,8 +71,8 @@ public class GetClientContext<T> extends ClientContext<T> {
 	}
 
 	public <RESULT> RESULT iterate(IterationCallback<T, RESULT> callback) throws EasyApiException {
-		EasyApiSetting setting = provider.get(name);
-		if (provider.useMock) {
+		EasyApiSetting setting = settingProvider.get(name);
+		if (settingProvider.useMock) {
 			File dir = ResourceUtil.getResourceAsFile("mock/" + name);
 			if (!dir.exists()) {
 				return null;
@@ -121,16 +120,15 @@ public class GetClientContext<T> extends ClientContext<T> {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	protected T executeQuery() throws EasyApiException {
-		EasyApiSetting setting = provider.get(name);
-		if (provider.useMock) return processMock();
+		EasyApiSetting setting = settingProvider.get(name);
+		if (settingProvider.useMock) return processMock();
 		HttpEntity entity = null;
 		try {
 			entity = processHttpRequest();
 			InputStream in = entity.getContent();
-			MessageHandler handler = MessageHandlerProvider.get(setting.getResponseType());
-			handler.process();
+			MessageHandler<T> handler = handlerProvider.get(setting.getResponseType());
+			return handler.handle(in, dtoClass, setting);
 		} catch (IOException e) {
 			throw new EasyApiSystemException(e);
 		} finally {
@@ -147,7 +145,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 	}
 
 	private HttpEntity processHttpRequest() throws ClientProtocolException, IOException {
-		EasyApiSetting setting = provider.get(name);
+		EasyApiSetting setting = settingProvider.get(name);
 		HttpGet method = new HttpGet(buildUri(setting));
 		processRequestHeaders(method);
 		HttpResponse response = client.execute(method);
@@ -159,7 +157,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 		throws EasyApiException {
 		RESULT res = null;
 		XStreamFactory.setBodyDto(dtoClass);
-		EasyApiSetting setting = provider.get(name);
+		EasyApiSetting setting = settingProvider.get(name);
 		try {
 			ObjectInputStream ois = XStreamFactory.getInstance(setting.getResponseFormat())
 				.createObjectInputStream(new InputStreamReader(in, setting.getEncoding()));
@@ -183,7 +181,7 @@ public class GetClientContext<T> extends ClientContext<T> {
 
 	@SuppressWarnings("unchecked")
 	private T processMock() throws EasyApiException {
-		EasyApiSetting setting = provider.get(name);
+		EasyApiSetting setting = settingProvider.get(name);
 		File dir = ResourceUtil.getResourceAsFile("mock/" + name);
 		if (!dir.exists()) {
 			return null;
