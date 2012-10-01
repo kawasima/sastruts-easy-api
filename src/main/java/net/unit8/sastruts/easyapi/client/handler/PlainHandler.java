@@ -24,9 +24,8 @@ public class PlainHandler<T> implements MessageHandler<T> {
 		xstream.alias(setting.getRootElement(), dtoClass);
 		if (setting.getResponseFormat() == MessageFormat.CSV)
 			CsvStreamXmlDriver.setRoot(setting.getRootElement());
-		else if (setting.getResponseFormat() == MessageFormat.JSON) {
+		else if (setting.getResponseFormat() == MessageFormat.JSON)
 			JettisonMappedXmlWrapperDriver.setRoot(setting.getRootElement());
-		}
 		return (T)xstream.fromXML(in, dto);
 	}
 
@@ -38,6 +37,8 @@ public class PlainHandler<T> implements MessageHandler<T> {
 		xstream.alias(setting.getRootElement(), XStreamFactory.getBodyDto());
 		if (setting.getResponseFormat() == MessageFormat.CSV)
 			CsvStreamXmlDriver.setRoot(setting.getRootElement());
+		else if (setting.getResponseFormat() == MessageFormat.JSON)
+			JettisonMappedXmlWrapperDriver.setRoot(setting.getRootElement());
 		xstream.fromXML(in, bodyDto);
 		XStreamFactory.setResponse(dto, bodyDto);
 		return dto;
