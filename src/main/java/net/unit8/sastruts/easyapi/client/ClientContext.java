@@ -81,7 +81,7 @@ public abstract class ClientContext<T> {
 		if (proxy != null)
 			httpParams.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getConnectionTimeout());
-		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getSocketTimeout());
+		HttpConnectionParams.setSoTimeout(httpParams, setting.getSocketTimeout());
 		method.setParams(httpParams);
 	}
 
