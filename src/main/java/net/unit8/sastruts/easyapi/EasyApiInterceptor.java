@@ -3,6 +3,7 @@ package net.unit8.sastruts.easyapi;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -74,8 +75,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				ret = invocation.proceed();
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (EasyApiException cause) {
-				logger.log(transactionId == null ? "WSEA0007" : "WSEA0008",
-						transactionId == null ? new Object[]{cause.getMessageCode()} : new Object[]{cause.getMessageCode(), transactionId},
+				logger.log(transactionId == null ? "WSEA0007" : "WSEA0008", createArgument(transactionId, cause),
 						cause);
 				Iterator<EasyApiException> iter = cause.iterator();
 				responseDto.header.failures = new ArrayList<FailureDto>();
@@ -85,8 +85,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				}
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (Throwable e) {
-				logger.log(transactionId == null ? "ESEA0005" : "ESEA0006",
-						transactionId == null ? new Object[]{} : new Object[]{transactionId}, e);
+				logger.log(transactionId == null ? "ESEA0005" : "ESEA0006", createArgument(transactionId, null), e);
 				responseDto.header.errors = new ArrayList<ErrorDto>();
 				responseDto.header.errors.add(new ErrorDto(systemErrorCode, e.getMessage()));
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
@@ -107,6 +106,21 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 		}
 
 		return ret;
+	}
+
+	private Object[] createArgument(String transactionId, Throwable e) {
+		StringBuilder requestUri = new StringBuilder();
+		requestUri.append(RequestUtil.getPath());
+		String queryString = RequestUtil.getRequest().getQueryString();
+		if (queryString != null)
+			requestUri.append("?").append(queryString);
+		List<Object> args = new ArrayList<Object>();
+		args.add(requestUri.toString());
+		if (e != null && e.getClass().equals(EasyApiException.class))
+			args.add(((EasyApiException)e).getMessageCode());
+		if (transactionId != null)
+			args.add(transactionId);
+		return args.toArray();
 	}
 
 }
