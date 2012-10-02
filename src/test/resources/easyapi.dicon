@@ -27,6 +27,14 @@
 		<property name="responseFormat">"JSON"</property>
 	</component>
 
+	<component name="familyRegisterJsonPlain" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
+		<property name="host">"example.com"</property>
+		<property name="path">"/api/{id}"</property>
+		<property name="responseFormat">"JSON"</property>
+		<property name="responseType">"plain"</property>
+		<property name="rootElement">"user"</property>
+	</component>
+
 	<component name="familyRegisterCsv" class="net.unit8.sastruts.easyapi.client.EasyApiSetting">
 		<property name="host">"example.com"</property>
 		<property name="path">"/api/{id}"</property>

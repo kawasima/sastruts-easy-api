@@ -16,6 +16,7 @@ public class EasyApiSetting {
 	private static final Logger logger = Logger.getLogger(EasyApiSetting.class);
 	/** Setting name */
 	private String scheme = "http";
+	private int port = 80;
 	private String name;
 	private String host;
 	private String path;
@@ -37,6 +38,12 @@ public class EasyApiSetting {
 		this.scheme = scheme;
 	}
 
+	public int getPort() {
+		return port;
+	}
+	public void setPort(int port) {
+		this.port = port;
+	}
 	public String getName() {
 		return name;
 	}

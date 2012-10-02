@@ -48,7 +48,7 @@ import org.seasar.framework.util.StringConversionUtil;
 import org.seasar.framework.util.StringUtil;
 
 public abstract class ClientContext<T> {
-	private static final Pattern DYNAMIC_SEGMENT_PTN = Pattern.compile("(\\{\\w+\\})");
+	private static final Pattern DYNAMIC_SEGMENT_PTN = Pattern.compile("\\{(\\w+)\\}");
 	protected List<NameValuePair> params = new ArrayList<NameValuePair>();
 	protected String name;
 	protected HttpHost proxy;
@@ -147,6 +147,7 @@ public abstract class ClientContext<T> {
 			return new URIBuilder()
 				.setScheme(setting.getScheme())
 				.setHost(setting.getHost())
+				.setPort(setting.getPort())
 				.setPath(processDynamicPath(setting.getPath()))
 				.setQuery(query)
 				.build();

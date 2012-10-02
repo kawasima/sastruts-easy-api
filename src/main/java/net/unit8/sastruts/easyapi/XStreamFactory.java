@@ -109,7 +109,22 @@ public class XStreamFactory {
 
 	private static XStream createCsvXStream() {
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-		return new XStream(new Sun14ReflectionProvider(), new CsvStreamXmlDriver(), loader);
+		return new XStream(new Sun14ReflectionProvider(), new CsvStreamXmlDriver(), loader) {
+			protected MapperWrapper wrapMapper(MapperWrapper next) {
+				return new MapperWrapper(next) {
+					@SuppressWarnings("rawtypes")
+					public boolean shouldSerializeMember(Class definedIn,
+							String fieldName) {
+						try {
+							return definedIn != Object.class
+									|| realClass(fieldName) != null;
+						} catch (CannotResolveClassException cnrce) {
+							return false;
+						}
+					}
+				};
+			}
+		};
 	}
 
 	public static void setBodyDto(Class<?> bodyDto) {

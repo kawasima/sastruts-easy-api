@@ -68,6 +68,19 @@ public class EasyApiClientTest {
 	}
 
 	@Test
+	public void testGetJsonPlain() throws EasyApiException {
+		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
+		BeanMap query = new BeanMap();
+		query.put("id", "3");
+		query.put("name", "hogehoge");
+		UserDto user = client
+				.get(UserDto.class, query)
+				.from("familyRegisterJsonPlain")
+				.getSingleResult();
+		assertThat(user.name, is("Yoshitaka Kawashima"));
+	}
+
+	@Test
 	public void testGetCsv() throws EasyApiException {
 		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
 		BeanMap query = new BeanMap();
