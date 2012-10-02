@@ -10,10 +10,15 @@ import org.junit.runner.RunWith;
 import org.seasar.framework.beans.util.BeanMap;
 import org.seasar.framework.unit.Seasar2;
 import org.seasar.framework.unit.TestContext;
+import org.seasar.framework.unit.impl.SimpleInternalTestContext;
 
 @RunWith(Seasar2.class)
 public class HotpepperApiTest {
 	private TestContext ctx;
+
+	public static void dummy() {
+		new HotpepperApiTest().ctx = new SimpleInternalTestContext();
+	}
 
 	@Test
 	public void testGet() throws EasyApiException {

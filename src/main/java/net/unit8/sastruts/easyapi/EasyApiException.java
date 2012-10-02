@@ -7,6 +7,8 @@ public class EasyApiException extends Exception {
 	protected String messageCode;
 	protected String message;
 
+	protected String transactionId;
+
 	protected EasyApiException next;
 	protected EasyApiException prev;
 
@@ -51,4 +53,13 @@ public class EasyApiException extends Exception {
 	public String getMessage() {
 		return message;
 	}
+
+	public String getTransactionId() {
+		return transactionId;
+	}
+
+	public void setTransactionId(String transactionId) {
+		this.transactionId = transactionId;
+	}
+
 }

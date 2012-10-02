@@ -9,10 +9,16 @@ import org.seasar.framework.container.impl.InitMethodDefImpl;
 import org.seasar.framework.container.impl.PropertyDefImpl;
 import org.seasar.framework.unit.Seasar2;
 import org.seasar.framework.unit.TestContext;
+import org.seasar.framework.unit.impl.SimpleInternalTestContext;
 
 @RunWith(Seasar2.class)
 public class EasyApiSettingTest {
 	private TestContext ctx;
+
+	public static void dummy() {
+		new EasyApiSettingTest().ctx = new SimpleInternalTestContext();
+	}
+
 	@Test
 	public void testWarning() {
 		ComponentDef componentDef = new ComponentDefImpl(EasyApiSetting.class, "setting1");

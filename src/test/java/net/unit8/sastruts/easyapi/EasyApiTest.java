@@ -16,12 +16,17 @@ import org.seasar.framework.container.factory.SingletonS2ContainerFactory;
 import org.seasar.framework.mock.servlet.MockHttpServletResponse;
 import org.seasar.framework.unit.Seasar2;
 import org.seasar.framework.unit.TestContext;
+import org.seasar.framework.unit.impl.SimpleInternalTestContext;
 import org.seasar.struts.util.ResponseUtil;
 import org.seasar.struts.util.ServletContextUtil;
 
 @RunWith(Seasar2.class)
 public class EasyApiTest {
 	private TestContext ctx;
+
+	public static void dummy() {
+		new EasyApiTest().ctx = new SimpleInternalTestContext();
+	}
 
 	@Test
 	public void test() {
@@ -88,6 +93,7 @@ public class EasyApiTest {
 		request.setRequestBody("<request><head/><body>"
 				+ "<title>Blog</title>"
 				+ "<description>This is body.</description></body></request>");
+		request.addHeader("X-Transaction-Id", "transactionId");
 		container.getExternalContext().setRequest(request);
 
 		Test02Action action = ctx.getComponent(Test02Action.class);

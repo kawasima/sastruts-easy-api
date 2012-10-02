@@ -74,7 +74,9 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				ret = invocation.proceed();
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (EasyApiException cause) {
-				logger.warn(cause.getMessage(), cause);
+				logger.log(transactionId == null ? "WSEA0007" : "WSEA0008",
+						transactionId == null ? new Object[]{cause.getMessageCode()} : new Object[]{cause.getMessageCode(), transactionId},
+						cause);
 				Iterator<EasyApiException> iter = cause.iterator();
 				responseDto.header.failures = new ArrayList<FailureDto>();
 				while(iter.hasNext()) {
@@ -83,7 +85,8 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 				}
 				response.setStatus(HttpServletResponse.SC_OK);
 			} catch (Throwable e) {
-				logger.error(e.getMessage(), e);
+				logger.log(transactionId == null ? "ESEA0005" : "ESEA0006",
+						transactionId == null ? new Object[]{} : new Object[]{transactionId}, e);
 				responseDto.header.errors = new ArrayList<ErrorDto>();
 				responseDto.header.errors.add(new ErrorDto(systemErrorCode, e.getMessage()));
 				response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);

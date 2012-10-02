@@ -118,6 +118,9 @@ public class PostClientContext<T> extends ClientContext<T> {
 			}
 			MessageHandler<T> handler = handlerProvider.get(setting.getResponseType());
 			handler.handle(in, data, setting);
+		} catch (EasyApiException e) {
+			e.setTransactionId(transactionId);
+			throw e;
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		} finally {

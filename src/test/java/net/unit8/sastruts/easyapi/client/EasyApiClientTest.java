@@ -17,10 +17,16 @@ import org.seasar.extension.jdbc.IterationContext;
 import org.seasar.framework.beans.util.BeanMap;
 import org.seasar.framework.unit.Seasar2;
 import org.seasar.framework.unit.TestContext;
+import org.seasar.framework.unit.impl.SimpleInternalTestContext;
 
 @RunWith(Seasar2.class)
 public class EasyApiClientTest {
 	private TestContext ctx;
+
+	public void dummy() {
+		ctx = new SimpleInternalTestContext();
+	}
+
 	@Test
 	public void testPost() {
 		EasyApiClient client = ctx.getComponent(EasyApiClient.class);
