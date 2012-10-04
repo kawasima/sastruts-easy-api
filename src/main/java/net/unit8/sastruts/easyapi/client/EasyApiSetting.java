@@ -26,7 +26,8 @@ public class EasyApiSetting {
 	private int socketTimeout = 10 * 1000;
 	private String encoding = "UTF-8";
 	private String responseType = "message";
-	private MessageFormat requestType = MessageFormat.XML;
+	private String requestType = "message";
+	private MessageFormat requestFormat = MessageFormat.XML;
 	private MessageFormat responseFormat = MessageFormat.XML;
 
 	private String rootElement;
@@ -81,10 +82,10 @@ public class EasyApiSetting {
 		this.encoding = encoding;
 	}
 
-	public MessageFormat getRequestType() {
+	public String getRequestType() {
 		return requestType;
 	}
-	public void setRequestType(MessageFormat requestType) {
+	public void setRequestType(String requestType) {
 		this.requestType = requestType;
 	}
 	public String getResponseType() {
@@ -110,6 +111,12 @@ public class EasyApiSetting {
 	}
 	public void setSocketTimeout(int socketTimeout) {
 		this.socketTimeout = socketTimeout;
+	}
+	public MessageFormat getRequestFormat() {
+		return requestFormat;
+	}
+	public void setRequestFormat(MessageFormat requestFormat) {
+		this.requestFormat = requestFormat;
 	}
 	public MessageFormat getResponseFormat() {
 		return responseFormat;

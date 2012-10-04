@@ -75,7 +75,7 @@ public abstract class ClientContext<T> {
 
 	protected void processRequestHeaders(HttpMessage method) {
 		EasyApiSetting setting = settingProvider.get(name);
-		switch (setting.getRequestType()) {
+		switch (setting.getRequestFormat()) {
 		case XML:
 			method.setHeader("Content-Type", "application/xml");
 			break;

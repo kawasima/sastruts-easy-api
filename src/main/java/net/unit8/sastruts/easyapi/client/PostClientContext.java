@@ -8,11 +8,13 @@ import java.util.List;
 import java.util.UUID;
 
 import net.unit8.sastruts.easyapi.EasyApiException;
+import net.unit8.sastruts.easyapi.EasyApiSystemException;
 import net.unit8.sastruts.easyapi.XStreamFactory;
 import net.unit8.sastruts.easyapi.client.handler.MessageHandler;
 import net.unit8.sastruts.easyapi.dto.RequestDto;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -53,7 +55,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 		if (data != null) {
 			XStreamFactory.setOmitFields(data);
 			HttpEntity entity = null;
-			switch (setting.getRequestType()) {
+			switch (setting.getRequestFormat()) {
 			case URL_ENCODE:
 				List<NameValuePair> parameters = CollectionsUtil.newArrayList();
 				BeanDesc beanDesc = BeanDescFactory
@@ -82,9 +84,14 @@ public class PostClientContext<T> extends ClientContext<T> {
 				}
 				break;
 			default:
-				RequestDto requestDto = new RequestDto();
-				requestDto.body = data;
-				String xml = XStreamFactory.getInstance().toXML(requestDto);
+				String xml;
+				if (StringUtils.equals(setting.getRequestType(), "plain")) {
+					xml = XStreamFactory.getInstance(setting.getRequestFormat()).toXML(data);
+				} else {
+					RequestDto requestDto = new RequestDto();
+					requestDto.body = data;
+					xml = XStreamFactory.getInstance(setting.getRequestFormat()).toXML(requestDto);
+				}
 				try {
 					entity = new StringEntity(xml, setting.getEncoding());
 				} catch (UnsupportedEncodingException e) {
@@ -107,7 +114,10 @@ public class PostClientContext<T> extends ClientContext<T> {
 				in = getMockResponseStream();
 			} else {
 				HttpResponse response = client.execute(method);
-				logger.error(response.getStatusLine());
+				if (response.getStatusLine().getStatusCode() != 200) {
+					logger.error(EntityUtils.toString(response.getEntity()));
+					throw new EasyApiSystemException(response.getStatusLine().getReasonPhrase());
+				}
 				entity = response.getEntity();
 				in = entity.getContent();
 			}
@@ -117,6 +127,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 			} else {
 				XStreamFactory.setBodyDto(data.getClass());
 			}
+
 			MessageHandler<T> handler = handlerProvider.get(setting.getResponseType());
 			handler.handle(in, data, setting);
 			execStatus = true;
