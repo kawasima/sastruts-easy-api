@@ -114,12 +114,13 @@ public class PostClientContext<T> extends ClientContext<T> {
 				in = getMockResponseStream();
 			} else {
 				HttpResponse response = client.execute(method);
-				if (response.getStatusLine().getStatusCode() != 200) {
-					logger.error(EntityUtils.toString(response.getEntity()));
+				int statusCode = response.getStatusLine().getStatusCode();
+				if (statusCode < 200 || statusCode >= 300) {
 					throw new EasyApiSystemException(response.getStatusLine().getReasonPhrase());
 				}
 				entity = response.getEntity();
-				in = entity.getContent();
+				if (entity != null)
+					in = entity.getContent();
 			}
 			Class<?> resultSetDtoClass = XStreamFactory.getResutSetClass(data);
 			if (resultSetDtoClass != null) {
@@ -129,7 +130,8 @@ public class PostClientContext<T> extends ClientContext<T> {
 			}
 
 			MessageHandler<T> handler = handlerProvider.get(setting.getResponseType());
-			handler.handle(in, data, setting);
+			if (in != null)
+				handler.handle(in, data, setting);
 			execStatus = true;
 		} catch (EasyApiException e) {
 			e.setTransactionId(transactionId);
