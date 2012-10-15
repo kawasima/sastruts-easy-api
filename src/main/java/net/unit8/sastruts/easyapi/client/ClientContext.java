@@ -21,6 +21,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.Predicate;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.math.RandomUtils;
+import org.apache.http.HttpHost;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.utils.URIBuilder;
@@ -40,6 +41,7 @@ public abstract class ClientContext<T> {
 	private static final Pattern DYNAMIC_SEGMENT_PTN = Pattern.compile("(\\{\\w+\\})");
 	protected List<NameValuePair> params = new ArrayList<NameValuePair>();
 	protected String name;
+	protected HttpHost proxy;
 
 	@Binding(bindingType=BindingType.NONE)
 	protected HttpClient client;
@@ -125,6 +127,10 @@ public abstract class ClientContext<T> {
 
 	public void setClient(HttpClient client) {
 		this.client = client;
+	}
+
+	public void setProxy(HttpHost proxy) {
+		this.proxy = proxy;
 	}
 
 	protected InputStream getMockResponseStream() {

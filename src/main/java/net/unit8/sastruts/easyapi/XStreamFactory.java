@@ -10,12 +10,18 @@ import net.unit8.sastruts.easyapi.dto.ResponseDto;
 import org.seasar.extension.jdbc.annotation.InOut;
 import org.seasar.extension.jdbc.annotation.Out;
 import org.seasar.extension.jdbc.annotation.ResultSet;
+import org.seasar.framework.container.SingletonS2Container;
+import org.seasar.framework.container.factory.SingletonS2ContainerFactory;
+import org.seasar.framework.container.hotdeploy.HotdeployBehavior;
+import org.seasar.framework.container.hotdeploy.HotdeployClassLoader;
+import org.seasar.framework.container.hotdeploy.HotdeployUtil;
 import org.seasar.framework.util.ClassUtil;
 import org.seasar.framework.util.FieldUtil;
 import org.seasar.framework.util.ModifierUtil;
 import org.seasar.framework.util.tiger.CollectionsUtil;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.converters.reflection.Sun14ReflectionProvider;
 import com.thoughtworks.xstream.io.xml.XmlFriendlyNameCoder;
 import com.thoughtworks.xstream.io.xml.Xpp3DomDriver;
 import com.thoughtworks.xstream.mapper.CannotResolveClassException;
@@ -31,8 +37,9 @@ public class XStreamFactory {
 	}
 
 	public static synchronized XStream getInstance() {
-		if (xstream == null) {
-			xstream = new XStream(new Xpp3DomDriver(new XmlFriendlyNameCoder("_-", "_"))) {
+		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		if (xstream == null || HotdeployUtil.isHotdeploy()) {
+			xstream = new XStream(new Sun14ReflectionProvider(), new Xpp3DomDriver(new XmlFriendlyNameCoder("_-", "_")), loader) {
 				protected MapperWrapper wrapMapper(MapperWrapper next) {
 					return new MapperWrapper(next) {
 						@SuppressWarnings("rawtypes")

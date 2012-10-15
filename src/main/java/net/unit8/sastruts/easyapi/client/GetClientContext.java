@@ -20,6 +20,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.params.ConnRoutePNames;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
@@ -67,6 +68,8 @@ public class GetClientContext<T> extends ClientContext<T> {
 		EasyApiSetting setting = provider.get(name);
 		HttpGet method = new HttpGet(buildUri(setting));
 		HttpParams httpParams = new BasicHttpParams();
+		if (proxy != null)
+			httpParams.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getConnectionTimeout());
 		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getSocketTimeout());
 		method.setParams(httpParams);
