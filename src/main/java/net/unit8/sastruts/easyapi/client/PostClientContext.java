@@ -100,6 +100,7 @@ public class PostClientContext<T> extends ClientContext<T> {
 			method.addHeader(transactionIdName, transactionId);
 		InputStream in = null;
 		HttpEntity entity = null;
+		boolean execStatus = false;
 		try {
 			logger.log("ISEA0001", new Object[] { transactionId, name });
 			if (settingProvider.useMock) {
@@ -118,13 +119,14 @@ public class PostClientContext<T> extends ClientContext<T> {
 			}
 			MessageHandler<T> handler = handlerProvider.get(setting.getResponseType());
 			handler.handle(in, data, setting);
+			execStatus = true;
 		} catch (EasyApiException e) {
 			e.setTransactionId(transactionId);
 			throw e;
 		} catch (IOException e) {
 			throw new IORuntimeException(e);
 		} finally {
-			logger.log("ISEA0002", new Object[] { transactionId, name });
+			logger.log("ISEA0002", new Object[] { transactionId, name, execStatus ? "end  " : "abend"});
 			IOUtils.closeQuietly(in);
 			EntityUtils.consumeQuietly(entity);
 		}
