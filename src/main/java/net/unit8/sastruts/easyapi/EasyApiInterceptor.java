@@ -116,7 +116,7 @@ public class EasyApiInterceptor extends AbstractInterceptor {
 			requestUri.append("?").append(queryString);
 		List<Object> args = new ArrayList<Object>();
 		args.add(requestUri.toString());
-		if (e != null && e.getClass().equals(EasyApiException.class))
+		if (e != null && e instanceof EasyApiException)
 			args.add(((EasyApiException)e).getMessageCode());
 		if (transactionId != null)
 			args.add(transactionId);
