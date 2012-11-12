@@ -2,8 +2,11 @@ package net.unit8.sastruts.easyapi.client;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpHost;
 import org.apache.http.client.HttpClient;
 import org.apache.http.conn.ClientConnectionManager;
@@ -25,7 +28,11 @@ public class EasyApiClient {
 	@Binding(bindingType=BindingType.MAY)
 	public String httpProxy;
 
+	@Binding(bindingType=BindingType.MAY)
+	public String noProxy;
+
 	private HttpHost proxyHost;
+	private List<String> noProxyList = new ArrayList<String>();
 
 	public EasyApiClient() {
 	}
@@ -44,6 +51,14 @@ public class EasyApiClient {
 				throw new IllegalArgumentException(e);
 			}
 		}
+		if (noProxy != null) {
+			String[] noProxies = StringUtils.split(noProxy, ",");
+			if (noProxies.length > 0) {
+				for (String proxy : noProxies) {
+					noProxyList.add(StringUtils.strip(proxy));
+				}
+			}
+		}
 	}
 
 	public <T>GetClientContext<T> get(Class<T> dtoClass) {
@@ -60,6 +75,7 @@ public class EasyApiClient {
 		}
 		if (proxyHost != null) {
 			ctx.setProxy(proxyHost);
+			ctx.setNoProxyList(noProxyList);
 		}
 		return ctx;
 	}

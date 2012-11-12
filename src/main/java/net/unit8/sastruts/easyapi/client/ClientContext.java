@@ -52,6 +52,7 @@ public abstract class ClientContext<T> {
 	protected List<NameValuePair> params = new ArrayList<NameValuePair>();
 	protected String name;
 	protected HttpHost proxy;
+	protected List<String> noProxyList;
 	protected HeaderGroup headerGroup;
 
 	@Resource(name="easyApiSettingProvider")
@@ -78,7 +79,7 @@ public abstract class ClientContext<T> {
 		if (headerGroup != null)
 			method.setHeaders(headerGroup.getAllHeaders());
 		HttpParams httpParams = new BasicHttpParams();
-		if (proxy != null)
+		if (proxy != null && !noProxyList.contains(setting.getHost()))
 			httpParams.setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy);
 		HttpConnectionParams.setConnectionTimeout(httpParams, setting.getConnectionTimeout());
 		HttpConnectionParams.setSoTimeout(httpParams, setting.getSocketTimeout());
@@ -167,6 +168,10 @@ public abstract class ClientContext<T> {
 
 	public void setProxy(HttpHost proxy) {
 		this.proxy = proxy;
+	}
+
+	public void setNoProxyList(List<String> noProxyList) {
+		this.noProxyList = noProxyList;
 	}
 
 	protected InputStream getMockResponseStream() {
