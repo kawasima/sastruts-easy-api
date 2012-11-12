@@ -76,6 +76,20 @@ public abstract class ClientContext<T> {
 
 	protected void processRequestHeaders(HttpMessage method) {
 		EasyApiSetting setting = settingProvider.get(name);
+		switch (setting.getRequestFormat()) {
+		case XML:
+			method.setHeader("Content-Type", "application/xml");
+			break;
+		case JSON:
+			method.setHeader("Content-Type", "application/json");
+			break;
+		case CSV:
+			method.setHeader("Content-Type", "text/csv");
+			break;
+		case URL_ENCODE:
+			method.setHeader("Content-Type", "application/x-www-form-urlencoded");
+			break;
+		}
 		if (headerGroup != null)
 			method.setHeaders(headerGroup.getAllHeaders());
 		HttpParams httpParams = new BasicHttpParams();
